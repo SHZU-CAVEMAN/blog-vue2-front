@@ -12,37 +12,17 @@
           <a style="margin-left: 1vh">当前分类</a>
         </div>
         <hr style="margin: 1vh 0 2vh 0; color: black; height: 1.5px" />
-        <div v-for="item in articlesCurrent" :key="item" @click="jump(item.id, item.name)">
-          <div :class="{ item_current: true, item_current_add: item.name == name }">
-            {{ item.name }}
+        <div
+          v-for="item in articlesCurrent"
+          :key="item.id || item._id || item.name || item.title"
+          @click="jump(item.id || item._id, getArticleName(item))"
+        >
+          <div :class="{ item_current: true, item_current_add: getArticleName(item) == name }">
+            {{ getArticleName(item) }}
           </div>
         </div>
       </div>
-      <!-- <div class="info">
-        <div style="text-align: center;">文章信息</div>
-        <hr style="margin:1vh 0px" />
-        <div>阅读量：236</div>
-        <hr style="margin:0" />
-        <div>日期：2023-4-15</div>
-        <hr style="margin:0" />
-        <div>分类：Vue</div>
-        <hr style="margin:0" />
-        <div>字数：10658</div>
-        <hr style="margin:0" />
-        <div>预计阅读时间：20min</div>
-        <hr style="margin:0" />
-        <br/>
-      </div> -->
 
-      <!-- <div class="index">
-        <div style="text-align: center;">当前分类：</div>
-        <hr style="margin:1vh 0px" />
-        <div>上一篇：2023-10-4</div>
-        <hr style="margin:0" />
-        <div>下一篇：无</div>
-        <hr style="margin:0" />
-        <br/>
-      </div> -->
     </div>
 
     <!-- 文章正文 -->
@@ -50,21 +30,22 @@
       <div class="title">
         {{ name }}
       </div>
+      <div v-if="publish_time || category_name" class="meta-line">
+        <span v-if="publish_time" class="meta-item">时间：{{ publish_time }}</span>
+        <span v-if="category_name" class="meta-item">分类：{{ category_name }}</span>
+      </div>
       <hr style="margin-top: 1vh" />
       <!-- 正文 -->
       <v-md-preview :text="text" ref="preview" style="" />
-      <!-- <v-md-preview-html :html="text" preview-class="vuepress-markdown-body"></v-md-preview-html> -->
-      <h v-if="publish_time" style="margin-left: 80%; font-size: 2.8vh">发布 {{ publish_time }}</h>
+   
       <hr v-if="publish_time" />
-      <!-- 尾部 -->
+      <!-- 尾部 ：上一篇/下一篇-->
       <div v-if="publish_time" style="
           display: flex;
           flex-direction: column;
           height: 20vh;
           padding: 3vh;
         ">
-        <!-- <a-icon  type="like" :theme=isLike @click="Onlike" style="font-size:4vh;margin-left: 0vh;" /> -->
-
         <h1 style="
             display: flex;
             align-items: center;
@@ -86,15 +67,15 @@
             padding: 1vh;
             border: 1px solid rgb(184, 184, 184);
           " @click="jumpLater(laterId, later)">
-          下一
-         
+          下一篇
+          <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
           <a>{{ later }}</a>
         </h1>
       </div>
     </div>
 
     <!-- 文章目录 -->
-    <div v-if="titles.length != 0" :class="{ catalog: true, outter: outter }">
+    <div :class="{ catalog: true, outter: outter }">
       <div class="el-icon-tickets" style="
           font-size: 2.8vh;
           margin-top: 1vh;
@@ -106,12 +87,10 @@
         <a-icon type="container" />
         <a style="margin-bottom: 2px; margin-left: 2vh"> 目录</a>
       </div>
-
       <hr style="margin-top: 5px; margin-bottom: 0" />
-
       <div style="background-color:white; padding: 2vh;">
         <!-- 滚动条加在这里 -->
-        <div ref="catalog_scroll" class="catalog_content">
+        <div v-if="titles.length" ref="catalog_scroll" class="catalog_content">
           <div :id="anchor.lineIndex" v-for="anchor in titles" :style="{
             padding: `0 0 0px ${anchor.indent * 30}px`,
             marginLeft: '0vh',
@@ -127,31 +106,23 @@
             <!-- <hr style="margin:0" /> -->
           </div>
         </div>
-
-        <!-- <br/> -->
-      </div>
-      <!-- 
-      <div class="sider">
-        <div class="siderbar">
+        <div v-else style="color: dimgray; font-size: 0.9rem; text-align: center; padding: 2vh 0;">
+          暂无目录
         </div>
-      </div> -->
-      <!-- <div style="height:2vh">
-      </div> -->
-    </div>
 
-    <!-- <comment :name="name" :commentData="commentData"></comment> -->
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import Catalog from "./catalog.vue";
-import left from "./left.vue";
+import axios from "axios";
+
 export default {
   name: "markdownComponent",
   props: ["id", "name"],
   components: {
-    left,
-    Catalog,
+
   },
   data() {
     return {
@@ -159,6 +130,7 @@ export default {
       // isLike: "",
       // articles:this.$store.state.articleInfo.article,
       publish_time: "",
+      category_name: "",
       former: "",
       later: "",
       formerId: "",
@@ -190,84 +162,42 @@ export default {
   },
   mounted() {
     this.getArticlesCurrent(this.name);
-    //文章数据(不该这个时候才请求)
-    console.log(this.name);
-    var url = encodeURI("/uploadFiles/" + this.name + ".md");
-    // var urldeco = decodeURI(url);
-    console.log(url);
+    // 文章详情改为从后端接口 /articles/:id 获取
+    const articleId = encodeURIComponent(this.id);
+    const url = `/articles/${articleId}`;
+
+    // 路由缓存情况下，防止重复进入后目录数据叠加
+    this.titles = [];
+    this.target = [];
+    this.indexArray = [];
+    // 根据 文章id请求文章数据
     axios({
       method: "get", //请求方法
       url: url,
     })
       .then((res) => {
-        this.text = res.data; //文章数据保存，text格式
+        const payload = res && res.data ? (res.data.data || res.data) : {};
+        this.text =
+          payload.content ||
+          payload.markdown ||
+          payload.md ||
+          payload.body ||
+          payload.text ||
+          "";
+
+        // 优先使用详情接口中的发布时间
+        this.publish_time =
+          payload.publish_time || payload.publishTime || this.publish_time;
+        this.category_name = this.getCategoryName(payload) || this.category_name;
+
         // this.flag = true;
       })
+      .then(() => this.$nextTick())
       .then(() => {
-        // this.anchors = this.$refs.preview.$el.querySelectorAll("h1,h2,h3,h4,h5,h6");
-        // this.flag = true;
-
-        // 一 、 拿到文章数据后获取文章标签等数据
-        console.log("这里执行了");
-        const anchors =
-          this.$refs.preview.$el.querySelectorAll("h1,h2,h3,h4,h5,h6");
-
-        // const anchors  = this.anchors;
-        // console.log("呵呵呵呵呵呵呵", anchors);
-
-        //anchors是一个NodeList对象，（类数组对象），表示一个有序的节点集合
-
-        const titles = Array.from(anchors).filter(
-          //Array.from：将anchors转换成一个数组
-          (title) => !!title.innerText.trim() //保留具有非空文本内容的标题元素。
-        );
-        // console.log('hhhhhhhhhhhhhhhhhhhhhhhhhhh', titles);
-
-        //给comment组件传值
-        if (titles.length == 0) {
-          this.flag = false;
-        } else {
-          this.flag = true;
-        }
-        this.$bus.$emit("changeStyleEvent", this.flag);
-
-        // 没有标题，则 this.titles数组为空，返回空数组。
-        if (!titles.length) {
-          this.titles = [];
-          return;
-        }
-
-        const hTags = Array.from(
-          new Set(titles.map((title) => title.tagName))
-        ).sort(); //去除重复的标题标签名，并将结果转换为数组 ?
-
-        this.titles = titles.map((el) => ({
-          title: el.innerText, //文本内容
-          lineIndex: el.getAttribute("data-v-md-line"), //所在行数
-          indent: hTags.indexOf(el.tagName), //标题级别-1
-          //一个title对象 存储了文本内容，所在行数，标题级别。
-        }));
-
-        //二 、监听目录标题的滚动
-        for (let i = 0; i < this.titles.length; i++) {
-          const item = this.$refs.preview.$el.querySelector(
-            `[data-v-md-line="${this.titles[i].lineIndex}"]`
-          );
-          this.target.push(item);
-          this.indexArray.push(this.titles[i].lineIndex);
-        }
-        let options = {
-          rootMargin: "5% 0px -70% 0px",
-        };
-        // 首次加载没滚动它也执行了一遍
-        const observer = new IntersectionObserver(
-          this.debounce(this.observeScroll, 100),
-          options
-        );
-        // console.log("试一试", target);
-        // this.target是nodelist类数组，用Array.from将其转化为数组
-        // 开始监视每一项（一滚动就调用observeScroll的方法）
-        Array.from(this.target, (item) => observer.observe(item));
+        // 组件渲染 markdown 为 HTML 存在异步时序，延后一帧再提取标题更稳定。
+        setTimeout(() => {
+          this.buildCatalog();
+        }, 0);
       })
       .catch((err) => {
         console.log("请求文章出错！");
@@ -276,33 +206,95 @@ export default {
 
     // 从会话存储中取，因为存在vuex的那一份数据会随着刷新被清除
     // 会话存储中的文章数据是在浏览器初次加载时就保存的（articles组件），如果有更新，那么获取的实际上是上次加载的文章数据。
-    let articles = JSON.parse(sessionStorage.getItem("article"));
+    let articles = JSON.parse(sessionStorage.getItem("article") || "[]");
     // 以下for循环与 “上一篇下一篇”这个功能有关：遍历所有文章，找到某篇文章的前后篇。
     for (let i = 0; i < articles.length; i++) {
-      if (articles[i].name == this.name) {
+      if (this.getArticleName(articles[i]) == this.name) {
         //可以对时间数据略作处理：2023/3/12 ——> 2023年3月12日
-        this.publish_time = articles[i].publish_time;
+        this.publish_time =
+          articles[i].publish_time || articles[i].publishTime || this.publish_time;
+        this.category_name = this.getCategoryName(articles[i]) || this.category_name;
         if (i != 0 && i != articles.length - 1) {
-          this.former = articles[i - 1].name;
-          this.later = articles[i + 1].name;
-          this.formerId = articles[i - 1].id;
-          this.laterId = articles[i + 1].id;
+          this.former = this.getArticleName(articles[i - 1]);
+          this.later = this.getArticleName(articles[i + 1]);
+          this.formerId = articles[i - 1].id || articles[i - 1]._id;
+          this.laterId = articles[i + 1].id || articles[i + 1]._id;
         }
         if (i == 0) {
           this.former = "温馨提示：目前是第一篇";
-          this.later = articles[i + 1].name;
-          this.laterId = articles[i + 1].id;
+          this.later = this.getArticleName(articles[i + 1]);
+          this.laterId = (articles[i + 1] && (articles[i + 1].id || articles[i + 1]._id)) || "";
         }
         if (i == articles.length - 1) {
-          this.former = articles[i - 1].name;
+          this.former = this.getArticleName(articles[i - 1]);
           this.later = "温馨提示：目前是最后一篇";
-          this.formerId = articles[i - 1].id;
+          this.formerId = (articles[i - 1] && (articles[i - 1].id || articles[i - 1]._id)) || "";
         }
       }
     }
   },
 
   methods: {
+    buildCatalog() {
+      if (!this.$refs.preview || !this.$refs.preview.$el) {
+        this.titles = [];
+        return;
+      }
+
+      this.target = [];
+      this.indexArray = [];
+
+      const anchors = this.$refs.preview.$el.querySelectorAll("h1,h2,h3,h4,h5,h6");
+      const titles = Array.from(anchors).filter((title) => !!title.innerText.trim());
+
+      this.flag = titles.length !== 0;
+      this.$bus.$emit("changeStyleEvent", this.flag);
+
+      if (!titles.length) {
+        this.titles = [];
+        return;
+      }
+
+      const hTags = Array.from(new Set(titles.map((title) => title.tagName))).sort();
+      this.titles = titles.map((el) => ({
+        title: el.innerText,
+        lineIndex: el.getAttribute("data-v-md-line"),
+        indent: hTags.indexOf(el.tagName),
+      }));
+
+      for (let i = 0; i < this.titles.length; i++) {
+        const item = this.$refs.preview.$el.querySelector(
+          `[data-v-md-line="${this.titles[i].lineIndex}"]`
+        );
+        if (item) {
+          this.target.push(item);
+          this.indexArray.push(this.titles[i].lineIndex);
+        }
+      }
+
+      const options = {
+        rootMargin: "5% 0px -70% 0px",
+      };
+      const observer = new IntersectionObserver(
+        this.debounce(this.observeScroll, 100),
+        options
+      );
+      Array.from(this.target, (item) => observer.observe(item));
+    },
+    getArticleName(article) {
+      if (!article) return "";
+      return article.name || article.title || "";
+    },
+    getCategoryName(article) {
+      if (!article) return "";
+      const category = article.category;
+      if (typeof category === "string") return category;
+      if (category && typeof category === "object") {
+        return category.name || category.title || "";
+      }
+      return "";
+    },
+    // 防抖函数
     debounce(func, wait) {
       let timeout;
       return function () {
@@ -314,8 +306,8 @@ export default {
         }, wait);
       };
     },
+    // 文章跳转：上一篇/下一篇
     jump(id, name) {
-      // console.log(name);
       this.$router.push({
         name: "articleViewComponent",
         params: {
@@ -324,17 +316,24 @@ export default {
         },
       });
     },
+    // 获取当前同分类文章列表
     getArticlesCurrent(name) {
-      let articles = JSON.parse(sessionStorage.getItem("article"));
-      let cate = "";
-      for (let i = 0; i < articles.length; i++) {
-        if (articles[i].name == name) cate = articles[i].category;
-      }
-      for (let j = 0; j < articles.length; j++) {
-        if (articles[j].category == cate)
-          this.articlesCurrent.push(articles[j]);
-      }
-      console.log("nishishabima???", this.articlesCurrent);
+      const articles = JSON.parse(sessionStorage.getItem("article") || "[]");
+      this.articlesCurrent = [];
+
+      const current = articles.find(
+        (item) =>
+          this.getArticleName(item) === name ||
+          String(item.id || item._id || "") === String(this.id || "")
+      );
+
+      const currentCategory = this.getCategoryName(current);
+      if (!currentCategory) return;
+
+      this.articlesCurrent = articles.filter(
+        (item) => this.getCategoryName(item) === currentCategory
+      );
+      console.log("当前同分类文章列表：", this.articlesCurrent);
     },
     // 两侧滚动监听：滚动则改变样式。
     handleScroll() {
@@ -381,8 +380,6 @@ export default {
           dom.style.color = "#1890ff";
           // dom.style.color = "black";
           dom.style.fontWeight = "600";
-          const index = this.indexArray.indexOf(line);
-          var sider = document.querySelector(".siderbar");
           // sider.style.transform = `translateY(${index * 5}vh)`;
         }
       });
@@ -514,7 +511,8 @@ h1:hover a {
 .catalog {
   /* overflow: auto; */
   position: fixed;
-  margin-left: 81%;
+  right: 1%;
+  margin-left: 0;
   margin-top: 2vh;
   background-color: #eff2f5;
   /* background-color: #ffffff; */
@@ -573,6 +571,20 @@ h1:hover a {
   font-size: 1.3rem;
   color: black;
   text-align: center;
+}
+
+.meta-line {
+  margin-top: 0.5vh;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5vh;
+  color: dimgray;
+  font-size: 0.85rem;
+  padding: 0 clamp(12px, 2vw, 24px);
+}
+
+.meta-item {
+  white-space: nowrap;
 }
 
 .sider {

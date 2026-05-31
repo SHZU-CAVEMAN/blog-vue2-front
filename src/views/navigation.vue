@@ -1,7 +1,7 @@
 <template>
    <div class="navigation">
       <img src="../assets/caveman.jpg" class="img" />
-      <div style="color:rgb(0, 0, 0);font-size:4vh;font-family: lisu;margin-left: 2vh;">李奥's blog</div>
+      <div style="color:rgb(0, 0, 0);font-size:4vh;font-family: lisu;margin-left: 2vh;">李奥's 博客</div>
 
       <div ref="shouye" v-bind:class="{ shouye: !flag1, click: flag1 }" style="margin-left: 70%;" @click="click">
          <div style="width:8vh;display: inline-block;" @click="jump1">首页</div>
@@ -28,14 +28,13 @@
          </a-menu>
       </a-dropdown>
 
-
-      <div v-bind:class="{ bianji: !flag3, click: flag3 }">
+      <!-- <div v-bind:class="{ bianji: !flag3, click: flag3 }">
          <div style="width:10vh;background-color:" @click="jump3">编辑</div>
       </div>
 
       <div v-bind:class="{ youlian: true, click: flag4 } " style="display:none">
          <div style="width:10vh;background-color:" @click="jump4">友链</div>
-      </div>
+      </div> -->
 
       <div class="bulb" @click="jump5">
          <a-icon ref='bulb_icon' type="bulb" :theme="theme" />

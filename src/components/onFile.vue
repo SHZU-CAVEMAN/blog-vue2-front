@@ -4,7 +4,6 @@
 <template>
   <div class="onFile">
     <div id="articleListCate">
-
       <div style="background-color: #ffffff; margin: 15px 2% 0 2%; font-size: 1.1rem;font-weight: 500;">
         <div style="background-color: rgb(248, 248, 248); display: inline-block">
           分类：
@@ -16,18 +15,15 @@
         <div style="background-color: rgb(255, 255, 255);text-align: center; font-size: 1.1rem;color: rgb(83, 83, 83);">存档
         </div>
         <hr style="margin-top: 5px; margin-bottom: 15px" />
-        <div v-for="item in cateArticle" :key="item.id" @click="jump(item.id, item.name)">
+        <div v-for="item in cateArticle" :key="item.id" @click="jump(item.id, item.title)">
           <div id="cateItem" style="">
             {{ item.publish_time }} >>
-            <a>{{ item.name }}</a>
+            <a>{{ item.title }}</a>
           </div>
         </div>
       </div>
 
     </div>
-
-    <br />
-    <br />
 
     <Footer style="margin-bottom: 5vh;" />
 
@@ -35,7 +31,7 @@
 </template>
 
 <script>
-import Footer from "./footer.vue";
+import Footer from "../views/footer.vue";
 
 export default {
   name: "articleListCateComponent",
@@ -43,12 +39,12 @@ export default {
   components: {
     Footer,
   },
-  //props数据中的articleInfo来自父组件，name来自路由参数（实际是在category组件中带上的）
+  //props数据中的 articleInfo 来自父组件，name来自路由参数（实际是在 category组件中带上的）
   props: ["articleInfo", "name"],
   data() {
     return {
       // data:this.$store.state.articleInfo.articleInfo,
-      cateArticle: [],//分类好的文章名
+      cateArticle: [],//分类好的文章list
       cateName: "",//分类名
       //   articleInfo:[],
     };
@@ -56,16 +52,17 @@ export default {
   watch: {
     //监听name，这样name有变化时才能触发响应式更新。否则只能在url中看到变化，不会更新组件。
     "name": {
-      handler(newVal, oldVal) {
+      handler(newVal) {
         // console.log("onFile!!!",newVal)
         if (newVal == 'total') {
           this.cateArticle = this.articleInfo;
           return;
         }
+        
         this.cateName = newVal;
         this.cateArticle = [];
         for (var i = 0; i < this.articleInfo.length; i++) {
-          if (this.articleInfo[i].category == newVal) {
+          if (this.articleInfo[i].category.name == newVal) {
             this.cateArticle.push(this.articleInfo[i]); //分类后的文章信息存在cache中
           }
         }
@@ -73,6 +70,7 @@ export default {
     }
   },
   methods: {
+    // 作废弃用，监听name了，这个方法就没什么意义了。
     cateEventHandler(name) {
       console.log("articleListCate组件", name);
       this.cateName = this.name;
@@ -84,8 +82,8 @@ export default {
         }
       }
     },
+    // 点击文章，跳转到具体文章页（articleView.vue），并把文章id和name传过去
     jump(id, name) {
-      // console.log(name);
       this.$router.push({
         name: "articleViewComponent",
         params: {
@@ -114,17 +112,12 @@ export default {
       this.cateName = this.name;
       this.cateArticle = [];
       for (var i = 0; i < this.articleInfo.length; i++) {
-        if (this.articleInfo[i].category == this.name) {
-          this.cateArticle.push(this.articleInfo[i]); //分类后的文章信息存在cache中
+        if (this.articleInfo[i].category.name == this.name) {
+          this.cateArticle.push(this.articleInfo[i]); //分类后的文章信息存在 cateArticle 
         }
       }
     }
-
-
   },
-
-
-
   beforeDestroy() {
     this.$bus.off();
   }
@@ -134,9 +127,10 @@ export default {
 
 <style>
 .onFile {
-  width: 56%;
-  margin-left: 22%;
+  width: 100%;
+  margin-left: 0;
   margin-top: 3.5vh;
+  box-sizing: border-box;
   /* margin-bottom:5vh; */
 }
 

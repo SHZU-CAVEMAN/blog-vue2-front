@@ -1,24 +1,27 @@
-<!-- articlelist的路由跳转到这个组件，这个组件接收文章信息后转交给markdown组件，由它去发请求 -->
+<!-- article.vue点击文章title，跳转到这个组件，这个组件接收文章信息后转交给markdown组件，由它去发请求 -->
 <template>
   <div>
+    <!-- 文章正文 -->
     <keep-alive>
       <markdown :id="id" :name="name"></markdown>
     </keep-alive>
+    <!-- 文章评论 ：name为文章名-->
     <comment :name="name" :commentData="commentData"></comment>
-    <br/>
   </div>
 </template>
 
 <script>
 import Comment from './comment.vue';
 import markdown from "./markdown.vue";
+
 export default {
   name: "articleViewComponent",
   // props的 id 和 name 来自路由（见router/index.js）
+  // commentData 来自父组件 App.vue 的传入
   props: ["id", "name", "commentData"],
   data() {
     return {
-      commentData: [],
+      //commentData: [],
     }
   },
   components: {

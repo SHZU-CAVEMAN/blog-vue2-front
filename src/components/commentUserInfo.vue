@@ -1,5 +1,5 @@
 <template>
-    <!-- 评论编辑验证弹窗 -->
+    <!-- 评论编辑 验证信息 弹窗 -->
     <div class="backdrop">
         <div class="confirm">
             <div style="display: flex;justify-content: space-between;">
@@ -11,9 +11,6 @@
 
             <div style="display: flex;align-items: center;flex-direction: column;">
                 <div style="width:100%;">
-                    <!-- <div style="text-align: justify;margin-left: 0%; width: 20%;display: inline;background-color: antiquewhite;">
-                    </div> -->
-                    <!-- <a style="text-align: justify;width: 50px;">十八</a> -->
                     <input type="text" v-model="nickname" placeholder="昵称（必填）" class="input" />
                     <div v-if="info1" ref="info1" :class="{ prompt: true, add: flag1 }">{{ info1 }}</div>
                 </div>
@@ -21,11 +18,10 @@
                     <input type="text" v-model="email" placeholder="邮箱（必填）" class="input" />
                     <div v-if="info2" ref="info2" :class="{ prompt: true, add: flag2 }">{{ info2 }}</div>
 
-                    <!-- <input type="email" name="email" required pattern="^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$"> -->
                 </div>
                 <div style="width:100%;">
                     <label for="avatar" class="selectImage">头像（可选）</label>
-                    <!-- <span class="fileName">{{ avatar }}</span> -->
+                 
                     <input id='avatar' type="file" @change="imageUpload" title="必填" style="display:none" />
                     <div ref="preview" class="preview"></div>
                 </div>
@@ -40,7 +36,6 @@
             </div>
             <hr style="margin:2vh 0 3vh 0" />
 
-
             <div>* 验证码将发送到您的邮箱</div>
             <div>* 以上信息将存储于您的浏览器，以便于下次访问</div>
 
@@ -54,7 +49,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";//这里不写会有神奇的后果
+import { mapActions } from "vuex"; //这里不写会有神奇的后果
 
 export default {
     name: "commentUserInfo",

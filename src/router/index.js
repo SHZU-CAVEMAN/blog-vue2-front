@@ -3,14 +3,14 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 const routes = [
-    //首页（有两个子组件）
+    //首页 （默认页面）
     {
         path: '/',
         name: 'homeComponent',
-        component: () => import('../components/home.vue'),
+        component: () => import('../views/home.vue'),
         children: [
             {
-                path: 'cate',
+                path: 'cate', // 点击分类，进入归档页面
                 name: 'onFile',
                 component: () => import('../components/onFile.vue'),
                 props($route){
@@ -20,7 +20,7 @@ const routes = [
                 }
             },
             {
-                path: '',  //默认页面
+                path: '',  //默认页面 （文章卡片）
                 name: 'articles',
                 component: () => import('../components/articles.vue'),
             },
@@ -28,21 +28,25 @@ const routes = [
 
     },
     //关于
+    /*
     {
         path:'/about',
         name:"aboutComponent",
-        component:()=>import('../components/about.vue'),
+        component:()=>import('../components/unUse/about.vue'),
 
     },
+    */
     // 编辑板
+    /*
     {
         path: '/mdEditor',
         name: 'mdEditorComponent',
-        component: () => import('../components/mdEditor.vue'),
+        component: () => import('../components/unUse/mdEditor.vue'),
         meta: {
             requireAuth: true // 编辑板 需要验证是否登录
         }
     },
+    */
     // 文章展示
     {
         path: '/articleView/:id/:name',
@@ -55,6 +59,7 @@ const routes = [
         },
         component: () => import('../components/articleView.vue')
     },
+    /*
     {
         path:'/friends',
         name:'friendsComponent',
@@ -65,11 +70,13 @@ const routes = [
         name:'statisticsComponent',
         component:()=>import('../components/statistics.vue')
     },
+    
     {
         path:'/messageBoard',
         name:'messageBoardComponent',
         component:()=>import('../components/messageBoard.vue')
     }
+        */
 
 ]
 const route = new Router({

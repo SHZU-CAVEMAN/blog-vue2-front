@@ -7,6 +7,7 @@ import VueLazyload from 'vue-lazyload';//图片懒加载
 import ant from 'ant-design-vue';
 import "ant-design-vue/dist/antd.css"
 import * as echarts from 'echarts';//这样引用为什么不行？：import echarts from 'echarts';
+import CommonComponents from './components/common';
 
 
 //1 引入markdown编辑器和vuepress主题：
@@ -48,6 +49,7 @@ Vue.config.productionTip = false;//关闭生产者提示
 Vue.prototype.$axios = axios;
 Vue.use(ant);
 Vue.use(VueLazyload);
+Vue.use(CommonComponents);
 Vue.prototype.$echarts = echarts;
 
 

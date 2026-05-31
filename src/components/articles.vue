@@ -1,10 +1,11 @@
 <template>
   <!-- 中间主体部分：文章卡片列表 + 分页器 + 底部信息栏 -->
   <div class="articles">
+    <!-- 文章卡片列表 -->
     <div v-for="article in temp" :key="article.id" v-slide-in>
       <article-latest :article="article"></article-latest>
     </div>
-
+    <!-- 分页器 -->
     <div class="pagination">
       <a-pagination
         simple
@@ -14,15 +15,17 @@
         @change="onChange"
       />
     </div>
-
+    <!-- 底部信息栏 -->
     <Footer />
   </div>
 </template>
 
 <script>
 import articleLatest from "./article.vue";
+import Footer from "../views/footer.vue";
 
-import Footer from "./footer.vue";
+import axios from "axios";
+
 export default {
   name: "articlesComponent",
   components: {
@@ -39,15 +42,16 @@ export default {
     onChange(page) {
       this.temp = this.articleInfo.slice((page - 1) * 10, page * 10);
       //回到顶部
-      scroll(0, 0);
+      //scroll(0, 0);
     },
   },
   created() {
     axios({
       method: "get",
-      url: "/article/getall",
+      url: "/articles",
     })
       .then((res) => {
+       
         for (var i = 0; i < res.data.data.length; i++) {
           this.articleInfo.unshift(res.data.data[i]); //倒序输出
         }
@@ -58,7 +62,9 @@ export default {
           "article",
           JSON.stringify(this.$store.state.articleInfo.article)
         );
+        
         this.temp = this.articleInfo.slice(0, 10);
+         console.log("文章数据加载：",this.articleInfo);
       })
       .catch((err) => {
         console.log(err);
@@ -70,10 +76,10 @@ export default {
 <style scoped>
 .articles {
   background-color: #eff2f5;
-  width: 56%;
-  margin-left: 22%;
-  margin-top:2%;
+  width: 100%;
+  margin-top: 2%;
   z-index: 2;  /* ? */
+  box-sizing: border-box;
 }
 .pagination {
   display: flex;

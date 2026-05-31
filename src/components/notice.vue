@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import {translate} from '../tools/address.js'
+import axios from 'axios'
 export default {
   name: "noticeComponent",
   data() {
@@ -24,20 +24,10 @@ export default {
       address:' XX ',
     }
   },
-  // computed: {
-  //   address: {
-  //     get() {
-  //       // console.log('notice组件执行了地位我的我的我的我的')
-  //       // return this.$store.state.user.ip.country+this.$store.state.user.ip.regionName;
-  //     }
-  //   }
-  // },
   created() {
     // console.log('notice组件')
     //挂载的时候，store异步请求的数据还没有收到。可以用watch监听。
     // this.address = this.$store.state.user.ip.regionName;
-
-  
 
     //使用axios获取ip
     axios({
@@ -45,15 +35,14 @@ export default {
       url: "http://api.ipify.org/?format=json",
     })
       .then((res) => {
-        console.log("home组件1", res.data);
         return axios.get('http://ip-api.com/json/' + res.data.ip)
       })
       .then((res) => {
-        console.log("home组件2", res.data);
+        console.log("ip信息：", res.data);
         // this.address = translate(res.data.city);
         this.address =   res.data.city
         this.$store.dispatch("setIp", res.data);//存入store
-        console.log('哈哈', this.$store.state.user.ip);
+        console.log('ip地址存入store', this.$store.state.user.ip);
       })
       .catch((err) => {
         console.log(err);

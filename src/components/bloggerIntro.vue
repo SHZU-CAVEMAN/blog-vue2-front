@@ -3,7 +3,7 @@
   <div class="bloggerIntro">
     <br />
     <div style="text-align: center">
-      <image-load :src="pictureUrl" :placeholder="placeholder" :duration="3000" class="imageLoad" />
+      <image-load :src="pictureUrl" :placeholder="placeholder" :duration="500" class="imageLoad" />
 
       <br />
       <h5 style="color: dimgray">Liao</h5>

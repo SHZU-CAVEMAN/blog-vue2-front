@@ -3,14 +3,14 @@
 <template>
     <div  v-bind:class="{left:true,outter:flag}">
         <category :articleInfo="articleInfo" />
-           
     </div>
 </template>
     
 <script>
-import Category from './category.vue';
+import Category from '../components/category.vue';
 
 import axios from 'axios'
+
 export default {
     name: "leftComponent",
     components:{
@@ -36,7 +36,6 @@ export default {
         }
     },
     created() {
-
         axios({
             method: "get",
             url: "/category/getall",
@@ -55,9 +54,7 @@ export default {
     mounted() {
         //console.log('category组件', this.articleInfo);
         window.addEventListener('scroll', this.handleScroll);
-
     }
-
 }
 </script>
     
@@ -71,14 +68,9 @@ export default {
     background-color: #ffffff;
     /* height: 90vh; */
     bottom: 0;
-
     border: 1px solid rgb(208, 215, 222);
-
-    /* 父组件和爷组件都没有设置relative，所以top是相对于浏览器， */
-    position: absolute;
+    position: sticky;
     top: 10vh;
-
-
     overflow-y: scroll;
 
     /* position: fixed; */
@@ -86,8 +78,8 @@ export default {
 }
 
 .outter {
-    position:fixed;
-    top:0;
+    position: sticky;
+    top: 0;
 }
 
 #category:hover {
@@ -112,8 +104,6 @@ export default {
     width: 85%;
     color: dimgray;
 }
-
-
 /* #character:hover{
         color:black;
     } */

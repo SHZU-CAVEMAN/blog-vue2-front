@@ -2,7 +2,6 @@
   <div class="footer">
     <div style="text-align: center; padding-top: 5vh;">
       <h6>©2023 by 山顶洞人</h6>
-      <!-- <br/> -->
 
       <h6>
         <a href=" https://cn.vuejs.org/" target="blank">Vue </a>|

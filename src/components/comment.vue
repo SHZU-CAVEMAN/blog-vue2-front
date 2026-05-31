@@ -19,11 +19,6 @@
                         {{ Acomment.nickname }}
                     </div>
 
-                    <!-- <h6 style="font-size: 14px;margin-top: 1vh;">
-                        {{ Acomment.comment }}
-                    </h6> -->
-
-
                     <v-md-editor v-model="Acomment.comment" mode="preview"  style="font-size: 14px;margin-top: 1vh;background-color:#EFF2F5 ;border:0;height: auto;"/>
 
                     <div style="display: flex; align-items: center">
@@ -52,7 +47,6 @@
                             <div class="content_name">
                                 {{ Bcomment.nickname }}
                             </div>
-                            <!-- <a-icon type="right" style="font-size:2vh;margin-left: 5vh;background-color: antiquewhite;"/> -->
                             <a-icon type="caret-right"
                                 style="font-size: 2.5vh;margin-left: 3vh;color:rgb(170, 170, 170);" />
                             <div class="content_name" style="margin-left: 3vh;">
@@ -60,9 +54,6 @@
                             </div>
                         </div>
 
-                        <!-- <h6 style=" font-size: 14px; margin-top: 1vh;">
-                            {{ Bcomment.comment }}
-                        </h6> -->
                         <v-md-editor v-model="Bcomment.comment" mode="preview"  style="font-size: 14px;margin-top: 1vh;height:auto;border:0;background-color:#EFF2F5  ;"/>
 
 
@@ -89,12 +80,15 @@
 </template>
 
 <script>
+// 评论编辑组件，点击 “回复” 展开
 import commentEdit from "./commentEdit.vue";
+
 export default {
     name: "commentComponent",
     components: {
         commentEdit,
     },
+    // name为文章名
     props: ["name", "commentData"],
     data() {
         return {
@@ -115,21 +109,17 @@ export default {
 
         };
     },
-    // computed: {
-    //     pictureUrl() {
-    //         return "http://localhost:3001/uploadFiles/" + this.comment.picture;
-    //     }
-    // },
 
     // 监听props的数据，有变化就立马更新。（因为初始时commentData的数据还拿不到）
     watch: {
         commentData: {
+            // 对 commentData（所有评论数据）进行过滤，得到当前文章的评论数据 commentListByProps
             handler() {
-                console.log(
-                    "有变化了,监听props方式",
-                    this.commentData.length,
-                    this.name
-                );
+                // console.log(
+                //     "有变化了,监听props方式",
+                //     this.commentData.length,
+                //     this.name
+                // );
                 for (let i = 0; i < this.commentData.length; i++) {
                     if (this.commentData[i].article == this.name) {
                         this.commentListByProps.push(this.commentData[i]);

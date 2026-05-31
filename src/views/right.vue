@@ -7,8 +7,9 @@
 </template>
 
 <script>
-import bloggerIntro from "./bloggerIntro.vue";
-import notice from "./notice.vue";
+import bloggerIntro from "../components/bloggerIntro.vue";
+import notice from "../components/notice.vue";
+
 export default {
     name: 'rightComponent',
     components: {
@@ -41,12 +42,13 @@ export default {
 
 <style scoped>
 .one {
-    position:absolute;
-    margin-left:80%;
+    position: sticky;
+    top: 10vh;
+    margin-left: 0;
 }
 .outter{
-    position:fixed;
-    top:0
+    position: sticky;
+    top: 0;
 }
 .notice{
     margin-left: 2%;

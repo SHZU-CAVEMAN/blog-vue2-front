@@ -15,11 +15,9 @@
                  <!-- 总计 -->
                  <div style="margin: 2vh 0;">
                     <div @click="jump('total')" class="total">
-
                         <div >
                             Total
                         </div>
-
                         <div>
                             {{ articleInfo.length }}
                         </div>
@@ -29,26 +27,16 @@
 
                 <div v-for="item in category" :key="item" style="margin-top: 0.5vh;">
                     <div id="category" @click="jump(item.name)">
-
                         <div >
                             {{ item.name }}
                         </div>
-
                         <div>
                             {{ item.number }}
                         </div>
-
                     </div>
                 </div>
-                <!-- 分割线 -->
-                <!-- <hr style="margin: 1vh 0;"/> -->
-
-               
             </div>
-
-
         </div>
-
     </div>
 </template>
 
@@ -65,10 +53,9 @@ export default {
     },
     props: ["articleInfo"],
     methods: {
+        // 点击分类，跳转到分类页面（onFile.vue），并把分类名传过去
         jump(name) {
             // console.log("点击事件没问题",name)
-
-
             this.$router.push({
                 name: "onFile",
                 query: {
@@ -83,7 +70,6 @@ export default {
             // this.$bus.$emit('cateEvent', name);  //被触发的那个组件还没被创建出来?
             // },200);
 
-
             // location.reload()
         }
 
@@ -92,7 +78,6 @@ export default {
         // if(sessionStorage.getItem('category')){
         //     this.category =  JSON.parse(sessionStorage.getItem('category'));
         // }
-
         axios({
             method: "get",
             url: "/category/getall",
@@ -102,18 +87,14 @@ export default {
                 for (var i = 0; i < this.length; i++) {
                     this.category.unshift(res.data.data[i]); //倒序输出
                 }
-                // console.log(this.category);
-                //vuex存起来
-                //  this.$store.dispatch("setCategory", this.category)
-                //sessionStorage存起来
-                // sessionStorage.setItem('category',JSON.stringify(this.$store.state.articleInfo.category));
+
             })
             .catch((err) => {
                 console.log(err);
             })
     },
     mounted() {
-        console.log('category组件', this.articleInfo);
+        //console.log('文章数据', this.articleInfo);
     }
 
 }

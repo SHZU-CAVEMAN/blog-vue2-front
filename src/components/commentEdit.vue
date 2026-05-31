@@ -1,30 +1,16 @@
 <template>
     <!--评论编辑按钮-->
     <div>
+        <!-- 编辑评论时要进行信息验证 -->
         <comment-user-info v-if="visible" :toWhich="toWhich" :toWhom="toWhom" :articleName="articleName"
             :comment="comment" />
-
+            
+        <!-- 评论辑主要界面 -->
         <v-md-editor v-model="comment" :autofocus='autofocus' left-toolbar="undo | image  emoji" :disabled-menus="[]"
             placeholder="欢迎评论" right-toolbar="preview" @upload-image="handleUploadImage" class="editor" />
 
         <div style="display: flex; margin-top: 2vh;justify-content: space-between;">
-
-            欢迎 止水 归来！
-
-            <!-- <a-popover placement="topLeft" trigger="click">
-                <template slot="content">
-                    <h6 class="userInfo_character">昵称</h6>
-                    <input type="text" placeholder="必填" v-model="nickname" class="userInfo_item" />
-                    <h6 class="userInfo_character">邮箱</h6>
-                    <input type="text" placeholder="必填" v-model="email" class="userInfo_item" />
-                    <h6 class="userInfo_character">其他</h6>
-                    <input type="text" placeholder="选填" v-model="other" class="userInfo_item" />
-                </template>
-
-                <div class="button">简略信息</div>
-
-            </a-popover> -->
-
+            欢迎归来！
             <!-- todo:如果评论编辑板是最上层的那个，则不需要有“取消”这个按钮 -->
             <div class="button" style="margin-left:50%;" @click="cancel">取消</div>
             <div class="button" style="" @click="commit">提交评论</div>
@@ -36,7 +22,8 @@
 </template>
 
 <script>
-import commentUserInfo from './commentUserInfo.vue';
+import commentUserInfo from './commentUserInfo2.vue';
+
 export default {
     name: "commentEditComponent",
     components: {

@@ -1,141 +1,223 @@
 <template>
-    <div style="position: relative">
-        <!-- 渐进式图片封装 其效果就是让两个图片叠加显示，完整的图片用css样式中的opacity给隐藏起来，表面显示的是占位图片
-      通过传入一定的时间，让展位图逐渐过度到完整的图片-->
-
-        <!-- 通过v-if来判断，如果全部的任务完成了将原来的展占位图片给移除掉 -->
-        <keep-alive>
-            <!-- 使用占位图有点问题 -->
-            <!-- <img v-if="!everything" ref="zhanwei" src="../assets/zhanwei.jpg" alt="" style="position: absolute" /> -->
-        </keep-alive>
-        <!-- 这部分是完整图片，可以看到，绑定了一个事件叫做 handleLoad，其效果是将图片加载完成和通过一个计数器经过一段时间的
-      模糊处理，将状态量变为true，从而更改到数据中的opacity的值，从而将完整图片展示出来，注意，这里绑定了style样式，可以在这里
-    通过绑定的style样式对该标签进行样式上的变更，但要注意，vue本质上是通过数据来确定样式的，无法使用js原生的思路，注意看这里，在
-  style中，传入了对象形式的方法，写入了一个opaity对应的值为originOpacity方法所产生的返回值，后面的transition提供了这个过度所需要的时间-->
-        <keep-alive>
-            <img ref="img" :src="srcload" alt="" @load="handleLoad"
-                :style="{ opacity: originOpacity, transition: `${duration}ms` }" />
-        </keep-alive>
+    <div class="image-load">
+        <!-- 占位图始终保留在文档流里，用于撑开容器高度，避免高度塌陷 -->
+        <img
+            class="placeholder"
+            :src="placeholderSrc"
+            alt=""
+            aria-hidden="true"
+            :style="placeholderStyle"
+        />
+        <!-- 显示原图 -->
+        <img
+            ref="origin"
+            class="origin"
+            :src="originSrc"
+            alt=""
+            @load="handleLoad"
+            :style="originStyle"
+        />
     </div>
 </template>
-  
+
 <script>
 export default {
     name: "imageLoad",
-    data() {
-        return {
-            originL: false, //图片加载完成的状态变量
-            everthing: false, //所有事情都做完的状态变量
-            zhanwei: "../assets/zhishui.jpg", //懒加载之前展示占位图片，或者模糊图。
-            srcload: "../assets/zhanwei.jpg"
-        };
-    },
-    computed: {
-        originOpacity() {
-            //通过计算属性确定图片是否加载完成，完成了返回1，然后传入到style里面完成原始图片的opacity展示
-            return this.originL ? 1 : 0;
-        },
-        // srcload(){
-        //     if (this.$refs.zhanwei.getBoundingClientRect().top < 500) {
-        //         return this.src
-        //         // console.log("nihaoniasdbdbsjdbchdb")
-        //     }
-        //     return this.src
-        // }
-    },
     props: {
+        // 原图地址
         src: {
-            //原始图片
             type: String,
             required: true,
         },
+        // 占位图地址（可选，不传则退回使用原图）
         placeholder: {
-            //占位图片
             type: String,
-            required: true,
+            default: "",
         },
+        // 原图淡入动画时长
         duration: {
-            //切换到原始图经过的毫秒数
             type: Number,
             default: 500,
         },
     },
-    methods: {
-        //这里提供了一个函数，由将状态由原来的flase变为true，同时写入了settimeou计时器，经过传入的动画执行几秒的秒数，然后将所有的事情都完成
-        //将所有都完成的状态变为true，从而传入到originOpacity函数中，再将0或者1传入到style的opacity中。
-        //@load="handleLoad"调用此事件将状态更改，然后在style中调用originOpacity完成对style的opacity的值的更改
-        handleLoad() {
-            this.originL = true;
-            setTimeout(() => {
-                this.everthing = true;
-                // this.$emit("load")//并且还抛出事件通知父组件
-            }, this.duration);
+    data() {
+        return {
+            // 实际绑定到原图 <img> 的地址，触发加载时才赋值
+            originSrc: "",
+            // 原图是否已完成加载
+            loaded: false,
+            // IntersectionObserver 实例
+            observer: null,
+            // scroll 回退方案下的监听函数
+            scrollHandler: null,
+            // 防止重复触发加载
+            didStartLoad: false,
+        };
+    },
+    computed: {
+        // 占位图优先使用 placeholder，未提供则回退原图
+        placeholderSrc() {
+            return this.placeholder || this.src;
         },
-        lazyload() {
-            let seeHeight = document.documentElement.clientHeight;
-            // console.log('ssssss',this.$refs.img.getBoundingClientRect().top);
-            // this.$nextTick(() => {
-                if (this.$refs.img.getBoundingClientRect().top < seeHeight) {
-                    this.$refs.img.src = this.src;
-                }
-                // console.log("lazyload执行了！！！", this.$refs.img.src);
-            // })
-
+        // 原图未完成加载前，持续显示占位图
+        showPlaceholder() {
+            return !this.loaded;
         },
-        //节流函数
-        throttle(fn, delay) {
-            let valid = true;
-            return function () {
-                if (valid) {
-                    //如果阀门已经打开，就继续往下
-                    setTimeout(() => {
-                        fn.apply(this, arguments); //定时器结束后执行
-                        valid = true; //执行完成后打开阀门
-                    }, delay);
-                    valid = false; //关闭阀门
-                }
+        // 占位图加载后淡出，但保留布局高度
+        placeholderStyle() {
+            return {
+                opacity: this.loaded ? 0 : 1,
+                transition: `opacity ${this.duration}ms ease`,
             };
         },
-        // load() {
-        //     if (this.$refs.zhanwei.getBoundingClientRect().top < 500) {
-        //         this.$refs.img.src = this.src;
-        //         console.log("nihaoniasdbdbsjdbchdb")
-        //     }
-        // }
+        // 原图样式：加载完成后淡入显示
+        originStyle() {
+            return {
+                opacity: this.loaded ? 1 : 0,
+                transition: `opacity ${this.duration}ms ease`,
+            };
+        },
     },
-    creared() { },
-    beforeUpdate() {
-        console.log(" beforeUpdate执行了!!!")
+    watch: {
+        src: {
+            handler() {
+                // 外部切换图片时，重置并重新走懒加载流程
+                this.resetState();
+                this.initLazyLoad();
+            },
+        },
     },
-    updated() {
-        console.log(" Update执行了!!!")
+    methods: {
+        // 清空当前加载状态，准备下一次图片加载
+        resetState() {
+            this.originSrc = "";
+            this.loaded = false;
+            this.didStartLoad = false;
+            this.teardownLazyLoad();
+        },
+        // 原图 load 事件：显示原图并释放监听资源
+        handleLoad() {
+            this.loaded = true;
+            this.$emit("load");
+            this.teardownLazyLoad();
+        },
+        // 判断组件是否进入（或接近）可视区域
+        isInViewport() {
+            if (!this.$el) return false;
+            const rect = this.$el.getBoundingClientRect();
+            const viewHeight =
+                window.innerHeight || document.documentElement.clientHeight;
+            return rect.top < viewHeight + 100 && rect.bottom > -100;
+        },
+        // 懒加载真正触发点：把原图地址赋给 img
+        startLoad() {
+            if (this.didStartLoad) return;
+            this.didStartLoad = true;
+            this.originSrc = this.src;
+        },
+        // scroll 回退方案：滚动时检测是否进入可视区
+        onScrollCheck() {
+            if (this.isInViewport()) {
+                this.startLoad();
+            }
+        },
+        // 节流，避免 scroll 高频触发带来的性能开销
+        throttle(fn, delay) {
+            let timer = null;
+            return (...args) => {
+                if (timer) return;
+                timer = setTimeout(() => {
+                    fn.apply(this, args);
+                    timer = null;
+                }, delay);
+            };
+        },
+        initLazyLoad() {
+            if (!this.src) return;
+            // 优先使用 IntersectionObserver（性能更好）
+            if (typeof window !== "undefined" && "IntersectionObserver" in window) {
+                this.observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            this.startLoad();
+                            if (this.observer) {
+                                this.observer.disconnect();
+                                this.observer = null;
+                            }
+                        }
+                    });
+                });
+                this.observer.observe(this.$el);
+                // 某些布局场景下 observer 首次回调会延后，先做一次首屏兜底检查。
+                this.onScrollCheck();
+                return;
+            }
+            // 兼容回退：老环境使用 scroll + 节流方案
+            this.scrollHandler = this.throttle(this.onScrollCheck, 120);
+            window.addEventListener("scroll", this.scrollHandler, { passive: true });
+            // 初始化时先检查一次，保证首屏可见图能立即加载
+            this.onScrollCheck();
+        },
+        // 清理 observer / scroll 监听，避免内存泄漏
+        teardownLazyLoad() {
+            if (this.observer) {
+                this.observer.disconnect();
+                this.observer = null;
+            }
+            if (this.scrollHandler) {
+                window.removeEventListener("scroll", this.scrollHandler);
+                this.scrollHandler = null;
+            }
+        },
     },
     mounted() {
-        //为什么不显示呢?这里更新的应该是下一轮
-        // if (this.$refs.img.getBoundingClientRect().top < 500) {
-        //     this.$refs.img.src = this.src;
-        //     console.log("nihaoniasdbdbsjdbchdb");
-        // }
-        this.lazyload();
-        //以下实际是监听滚动，修改dom（加载图片）
-        window.addEventListener("scroll", this.lazyload); //一滚动就疯狂调用lazyload函数，因此要节流。
+        // 组件挂载后启动懒加载
+        this.initLazyLoad();
+    },
+    beforeDestroy() {
+        // 组件销毁前释放监听资源
+        this.teardownLazyLoad();
     },
 };
 </script>
-  
+
 <style scoped>
-.zhanwei {
-    /* filter: blur(2vw); */
-    /* 占位图片脱离文档流，在上层显示 */
-    position: absolute;
-    width: 20%;
+.image-load {
+    /* 作为绝对定位原图的参照 */
+    position: relative;
+    /* 让内部图片在容器内居中对齐 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    /* 裁剪溢出区域 ：占位图有 transform: scale(1.02)*/
+    overflow: hidden;
 }
 
-/* img {
+.placeholder,
+.origin {
+    /* 默认占满容器宽度，高度由图片比例自动撑开 */
     width: 100%;
-    height: 170px;
-    object-fit: cover;
-    flex: 1;
-} */
+    /* img 默认类似 inline，会在底部留一点空白（和文字对齐导致），block 可避免这种莫名缝隙。 */
+    display: block;
+    /* 配合父容器 flex，确保图片在水平方向居中 */
+    margin: 0 auto;
+}
+
+.placeholder {
+    /* 占位图轻微模糊，营造渐进加载视觉 */
+    filter: blur(10px);
+    /* 模糊边缘会收缩，轻微放大避免边缘露白 */
+    transform: scale(1.02);
+}
+
+.origin {
+    /* 原图覆盖在占位图之上，通过 opacity 做淡入 */
+    position: absolute;
+    /* 铺满容器四边：等价于 top/right/bottom/left: 0，表示原图贴满父容器四边 */
+    inset: 0;
+    /* 在铺满区域内保持居中：铺满效果（inset:0 + width:100%） */
+    margin: auto;
+}
 </style>
   
