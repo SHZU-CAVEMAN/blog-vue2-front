@@ -41,18 +41,51 @@
 </template>
 
 <script>
-
-import axios from 'axios'
 export default {
     name: "categoryComponent",
     data() {
         return {
-            length: "",
             category: [],
         }
     },
     props: ["articleInfo"],
+    watch: {
+        articleInfo: {
+            // 直接基于已拿到的文章列表生成分类统计，避免重复请求 /category/getall。
+            handler() {
+                this.buildCategoryFromArticles();
+            },
+            deep: true,
+            immediate: true,
+        },
+    },
     methods: {
+        // 从文章数据中提取分类名，兼容 category 为字符串或对象两种结构。
+        getCategoryName(article) {
+            if (!article) return "";
+            const cate = article.category;
+            if (typeof cate === "string") return cate;
+            if (cate && typeof cate === "object") return cate.name || cate.title || "";
+            return "";
+        },
+        // 使用文章列表聚合分类数量，复用已有数据来源。
+        buildCategoryFromArticles() {
+            const list = Array.isArray(this.articleInfo) ? this.articleInfo : [];
+            const map = {};
+
+            list.forEach((article) => {
+                const name = this.getCategoryName(article);
+                if (!name) return;
+                if (!map[name]) {
+                    map[name] = 0;
+                }
+                map[name] += 1;
+            });
+
+            this.category = Object.keys(map)
+                .map((name) => ({ name, number: map[name] }))
+                .sort((a, b) => b.number - a.number);
+        },
         // 点击分类，跳转到分类页面（onFile.vue），并把分类名传过去
         jump(name) {
             // console.log("点击事件没问题",name)
@@ -75,23 +108,6 @@ export default {
 
     },
     created() {
-        // if(sessionStorage.getItem('category')){
-        //     this.category =  JSON.parse(sessionStorage.getItem('category'));
-        // }
-        axios({
-            method: "get",
-            url: "/category/getall",
-        })
-            .then((res) => {
-                this.length = res.data.data.length;
-                for (var i = 0; i < this.length; i++) {
-                    this.category.unshift(res.data.data[i]); //倒序输出
-                }
-
-            })
-            .catch((err) => {
-                console.log(err);
-            })
     },
     mounted() {
         //console.log('文章数据', this.articleInfo);

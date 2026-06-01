@@ -89,14 +89,19 @@ export default {
         commentEdit,
     },
     // name为文章名
-    props: ["name", "commentData"],
+    props: ["name"],
+    computed: {
+        // 评论数据统一从 Vuex 读取，避免和父组件 props 并存。
+        allComments() {
+            return this.$store.state.comment.commentdata || [];
+        },
+    },
     data() {
         return {
             isShow: false,
             isShowId: 0,
          
             likeNumber: "", // 某条评论的点赞数量（此功能暂废弃 ————7.13）
-            commentListByVueX: this.$store.state.comment.commentdata, //请求来的，相应文章的评论数据
             commentListByProps: [],
             pictureUrl: "/uploadFiles/",
             // theme:'',
@@ -110,30 +115,38 @@ export default {
         };
     },
 
-    // 监听props的数据，有变化就立马更新。（因为初始时commentData的数据还拿不到）
+    // 监听 Vuex 评论数据，有变化就立马更新。
     watch: {
-        commentData: {
-            // 对 commentData（所有评论数据）进行过滤，得到当前文章的评论数据 commentListByProps
+        allComments: {
+            // 对 allComments（所有评论数据）进行过滤，得到当前文章的评论数据 commentListByProps
             handler() {
-                // console.log(
-                //     "有变化了,监听props方式",
-                //     this.commentData.length,
-                //     this.name
-                // );
-                for (let i = 0; i < this.commentData.length; i++) {
-                    if (this.commentData[i].article == this.name) {
-                        this.commentListByProps.push(this.commentData[i]);
-                    }
-                }
+                // 每次变更都重新生成列表，避免 push 导致重复累积。
+                this.commentListByProps = this.getCurrentArticleComments();
                 console.log(this.commentListByProps);
             },
             deep: true,
             immediate: true,
         },
+        // 文章切换时也同步刷新评论列表。
+        name() {
+            this.commentListByProps = this.getCurrentArticleComments();
+        },
     },
     // */
     methods: {
+        // 统一封装过滤逻辑，便于 watch/后续逻辑复用。
+        getCurrentArticleComments() {
+            if (!Array.isArray(this.allComments)) {
+                return [];
+            }
+            return this.allComments.filter((item) => item.article == this.name);
+        },
         Replyto(id, comment) {
+            // 允许被无参调用（例如总线触发关闭），防止访问 undefined 报错。
+            if (!comment) {
+                this.closeCommentEdit();
+                return;
+            }
             //以下两行代码的作用是：每次点击reply to时，只会有相应的评论会展开一个评论框，而不是每个。
             this.isShow = !this.isShow;
             this.isShowId = id;
@@ -154,15 +167,22 @@ export default {
                 // this.$store.dispatch('setToWhom',comment.nickname)
             }
         },
+        // 总线关闭事件专用处理器：只负责收起编辑框。
+        closeCommentEdit() {
+            this.isShow = false;
+            this.isShowId = 0;
+        },
 
     },
     created() {
         //props传入的数据在 created阶段已经有了。
-        this.$bus.$on("closeCommentEdit",this.Replyto);
+        // 绑定语义匹配的处理器，避免事件参数与 Replyto 签名不一致。
+        this.$bus.$on("closeCommentEdit", this.closeCommentEdit);
 
     },
-    beforeMount() {
-        console.log("comment组件接收到vuex中的评论数据（某个文章的）", this.commentListByVueX);
+    beforeDestroy() {
+        // 组件销毁时解绑，避免重复绑定和内存泄漏。
+        this.$bus.$off("closeCommentEdit", this.closeCommentEdit);
     },
 };
 </script>

@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2015",
+    "ignoreDeprecations": "6.0", // 忽略 TypeScript 6.0 中的弃用警告
     "module": "esnext",
     "baseUrl": "./",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": [
         "src/*"

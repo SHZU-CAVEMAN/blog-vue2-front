@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 export default {
   name: "noticeComponent",
   data() {
@@ -30,12 +29,12 @@ export default {
     // this.address = this.$store.state.user.ip.regionName;
 
     //使用axios获取ip
-    axios({
+    this.$axios({
       method: "get",
       url: "http://api.ipify.org/?format=json",
     })
       .then((res) => {
-        return axios.get('http://ip-api.com/json/' + res.data.ip)
+        return this.$axios.get('http://ip-api.com/json/' + res.data.ip)
       })
       .then((res) => {
         console.log("ip信息：", res.data);

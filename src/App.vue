@@ -9,7 +9,8 @@
     <!-- keep-alive还是好，看样子还是应该把articlelist请求的数据保存在store中。 -->
     <!-- 以下：home组件 -->
     <keep-alive>
-      <router-view :commentData="commentData"></router-view>
+      <!-- 评论数据已统一放到 Vuex，这里不再通过 props 透传。 -->
+      <router-view></router-view>
     </keep-alive>
 
   </div>
@@ -18,38 +19,42 @@
 <script>
 import navigation from './views/navigation.vue'
 
-import axios from 'axios';
-
 export default {
   name: 'App',
   components: {
     navigation,
 },
-  data() {
-    return {
-      commentData: [],
-    }
-  },
   methods:{
     click(){
       // console.log('返回顶部',e.target)
       // window.scrollTo(0,0);
-    }
+    },
+    // 统一评论请求入口：初始化与新增评论后都复用这个方法，避免散落的重复实现。
+    fetchComments() {
+      this.$axios({
+        method: "get",
+        url: "/comment/getall",
+      })
+        .then((res) => {
+          // 评论数据统一写入 store，避免和 props 并存导致双数据源。
+          this.$store.dispatch("setComment", res.data.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    // 事件总线回调：收到评论新增事件后刷新一次评论列表。
+    handleCommentAdded() {
+      this.fetchComments();
+    },
   },
   created() {
-    // 请求评论数据
-    axios({
-      method: "get",
-      url: "/comment/getall",
-    })
-      .then((res) => {
-        //将请求的数据保存在store中
-        this.$store.dispatch("setComment", res.data.data);
-        this.commentData = res.data.data;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    this.fetchComments();
+    // 监听评论新增事件，实现“提交后仅刷新评论”而不是整页刷新。
+    this.$bus.$on("commentAdded", this.handleCommentAdded);
+  },
+  beforeDestroy() {
+    this.$bus.$off("commentAdded", this.handleCommentAdded);
   }
 
 }

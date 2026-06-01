@@ -93,7 +93,7 @@ export default {
                 this.avatar = Math.floor(Math.random() * 9 + 1)+'.jpg';
             }
             // console.log('最终数据', this.nickname, this.email, this.avatar, this.articleName, this.time)
-            axios({
+            this.$axios({
                 method: "post",
                 url: "/comment/add",
                 data: {
@@ -111,7 +111,12 @@ export default {
                     toWhom: this.toWhom || '',
                 },
             }).then((res) => {
-
+                console.log("提交评论成功", res);
+                // 评论提交成功后通知根组件刷新评论列表，保证当前页面实时可见。
+                this.$bus.$emit("commentAdded");
+                // 重置编辑器内容并关闭信息弹窗，避免重复提交旧内容。
+                this.comment = "";
+                this.visible = false;
             });
         },
         commit() {
@@ -139,6 +144,10 @@ export default {
         this.$bus.$on("commentUserInfo", this.info)
 
 
+    },
+    beforeDestroy() {
+        this.$bus.$off("commentUserInfoShow", this.show);
+        this.$bus.$off("commentUserInfo", this.info);
     },
 
 }

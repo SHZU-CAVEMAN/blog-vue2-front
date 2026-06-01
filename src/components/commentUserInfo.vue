@@ -140,9 +140,9 @@ export default {
     data() {
         return {
             nickname: "", //评论框收集
-            _nickname: "",
+            nickname1: "",
             email: "", //评论框收集
-            _email: "",
+            email1: "",
             other: "", //评论框收集
             time: "", //系统收集
             avatar: "", // 系统随机分配
@@ -190,9 +190,9 @@ export default {
             });
             //图片发送给服务器(进行判断，点击提交之后再发送)
             // if (this.flagCommit) {
-            axios
+            this.$axios
                 .post("/upload-single-file", formdata)
-                .then((res) => {
+                .then(() => {
                     // console.log(res);
                 }); //打印响应体
             // }
@@ -220,10 +220,10 @@ export default {
             } else {
                 this.info3 = "";
                 //验证邮箱时保存，防止更改，传递时就传递保存的数据
-                this._email = this.email;
-                this._nickname = this.nickname;
-                this._avatar = this.avatar;
-                axios({
+                this.email1 = this.email;
+                this.nickname1 = this.nickname;
+                this.avatar1 = this.avatar;
+                this.$axios({
                     method: "post",
                     url: "/verify/email",
                     data: {
@@ -255,7 +255,7 @@ export default {
 
             //值都正确，则关闭对话框
             if (this.flag1 && this.flag2 && this.flag3) {
-                this.$bus.$emit("commentUserInfo", { email: this._email, nickname: this._nickname, avatar: this._avatar })
+                this.$bus.$emit("commentUserInfo", { email: this.email1, nickname: this.nickname1, avatar: this.avatar1 })
 
                 this.$bus.$emit("commentUserInfoShow", false);
                 // this.flagCommit = true;

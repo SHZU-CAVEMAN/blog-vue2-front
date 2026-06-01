@@ -24,8 +24,6 @@
 import articleLatest from "./article.vue";
 import Footer from "../views/footer.vue";
 
-import axios from "axios";
-
 export default {
   name: "articlesComponent",
   components: {
@@ -46,7 +44,7 @@ export default {
     },
   },
   created() {
-    axios({
+    this.$axios({
       method: "get",
       url: "/articles",
     })

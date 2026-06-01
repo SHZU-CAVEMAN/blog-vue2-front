@@ -116,8 +116,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "markdownComponent",
   props: ["id", "name"],
@@ -154,87 +152,98 @@ export default {
   watch: {
     id: {
       handler() {
-        //刷新页面,这样才能拿到axios请求后的数据。
-        // location.reload();
-        this.$router.go(0);
+        // 1 路由参数变化时局部刷新数据，避免整页 reload 造成体验抖动。
+        // 2 原先this.$router.go(0)：等同于浏览器刷新（location.reload()），整个页面销毁重建，Vuex 状态、sessionStorage 以外的所有内存数据清空，会有明显的白屏闪烁
+        // 3 refreshArticle 只在组件内部重新执行一遍数据请求和状态重置，DOM 不销毁、页面不闪烁、Vuex 状态保留，路由参数（id/name）变化时平滑切换到新文章。
+        this.refreshArticle();
       },
+    },
+    name() {
+      // 标题参数变化时同步刷新，确保目录和上下篇与当前文章一致。
+      this.refreshArticle();
     },
   },
   mounted() {
-    this.getArticlesCurrent(this.name);
-    // 文章详情改为从后端接口 /articles/:id 获取
-    const articleId = encodeURIComponent(this.id);
-    const url = `/articles/${articleId}`;
-
-    // 路由缓存情况下，防止重复进入后目录数据叠加
-    this.titles = [];
-    this.target = [];
-    this.indexArray = [];
-    // 根据 文章id请求文章数据
-    axios({
-      method: "get", //请求方法
-      url: url,
-    })
-      .then((res) => {
-        const payload = res && res.data ? (res.data.data || res.data) : {};
-        this.text =
-          payload.content ||
-          payload.markdown ||
-          payload.md ||
-          payload.body ||
-          payload.text ||
-          "";
-
-        // 优先使用详情接口中的发布时间
-        this.publish_time =
-          payload.publish_time || payload.publishTime || this.publish_time;
-        this.category_name = this.getCategoryName(payload) || this.category_name;
-
-        // this.flag = true;
-      })
-      .then(() => this.$nextTick())
-      .then(() => {
-        // 组件渲染 markdown 为 HTML 存在异步时序，延后一帧再提取标题更稳定。
-        setTimeout(() => {
-          this.buildCatalog();
-        }, 0);
-      })
-      .catch((err) => {
-        console.log("请求文章出错！");
-        return Promise.reject(err);
-      });
-
-    // 从会话存储中取，因为存在vuex的那一份数据会随着刷新被清除
-    // 会话存储中的文章数据是在浏览器初次加载时就保存的（articles组件），如果有更新，那么获取的实际上是上次加载的文章数据。
-    let articles = JSON.parse(sessionStorage.getItem("article") || "[]");
-    // 以下for循环与 “上一篇下一篇”这个功能有关：遍历所有文章，找到某篇文章的前后篇。
-    for (let i = 0; i < articles.length; i++) {
-      if (this.getArticleName(articles[i]) == this.name) {
-        //可以对时间数据略作处理：2023/3/12 ——> 2023年3月12日
-        this.publish_time =
-          articles[i].publish_time || articles[i].publishTime || this.publish_time;
-        this.category_name = this.getCategoryName(articles[i]) || this.category_name;
-        if (i != 0 && i != articles.length - 1) {
-          this.former = this.getArticleName(articles[i - 1]);
-          this.later = this.getArticleName(articles[i + 1]);
-          this.formerId = articles[i - 1].id || articles[i - 1]._id;
-          this.laterId = articles[i + 1].id || articles[i + 1]._id;
-        }
-        if (i == 0) {
-          this.former = "温馨提示：目前是第一篇";
-          this.later = this.getArticleName(articles[i + 1]);
-          this.laterId = (articles[i + 1] && (articles[i + 1].id || articles[i + 1]._id)) || "";
-        }
-        if (i == articles.length - 1) {
-          this.former = this.getArticleName(articles[i - 1]);
-          this.later = "温馨提示：目前是最后一篇";
-          this.formerId = (articles[i - 1] && (articles[i - 1].id || articles[i - 1]._id)) || "";
-        }
-      }
-    }
+    // 滚动监听在 mounted 绑定，和 beforeDestroy 成对管理。
+    window.addEventListener("scroll", this.handleScroll);
+    this.refreshArticle();
   },
 
   methods: {
+    // 统一刷新文章详情、目录和上下篇数据，避免把初始化逻辑散落在生命周期里。
+    refreshArticle() {
+      this.getArticlesCurrent(this.name);
+
+      // 每次刷新前清空状态，避免 keep-alive 或参数切换导致旧数据残留。
+      this.titles = [];
+      this.target = [];
+      this.indexArray = [];
+      this.former = "";
+      this.later = "";
+      this.formerId = "";
+      this.laterId = "";
+
+      // 文章详情改为从后端接口 /articles/:id 获取
+      const articleId = encodeURIComponent(this.id);
+      const url = `/articles/${articleId}`;
+
+      this.$axios({
+        method: "get",
+        url,
+      })
+        .then((res) => {
+          const payload = res && res.data ? (res.data.data || res.data) : {};
+          this.text =
+            payload.content ||
+            payload.markdown ||
+            payload.md ||
+            payload.body ||
+            payload.text ||
+            "";
+
+          // 优先使用详情接口中的发布时间/分类。
+          this.publish_time =
+            payload.publish_time || payload.publishTime || this.publish_time;
+          this.category_name = this.getCategoryName(payload) || this.category_name;
+        })
+        .then(() => this.$nextTick())
+        .then(() => {
+          // markdown 渲染为 DOM 有异步时序，延后一帧提取目录更稳定。
+          setTimeout(() => {
+            this.buildCatalog();
+          }, 0);
+        })
+        .catch((err) => {
+          console.log("请求文章出错！");
+          return Promise.reject(err);
+        });
+
+      // 从 sessionStorage 计算上下篇信息。
+      const articles = JSON.parse(sessionStorage.getItem("article") || "[]");
+      for (let i = 0; i < articles.length; i++) {
+        if (this.getArticleName(articles[i]) == this.name) {
+          this.publish_time =
+            articles[i].publish_time || articles[i].publishTime || this.publish_time;
+          this.category_name = this.getCategoryName(articles[i]) || this.category_name;
+          if (i != 0 && i != articles.length - 1) {
+            this.former = this.getArticleName(articles[i - 1]);
+            this.later = this.getArticleName(articles[i + 1]);
+            this.formerId = articles[i - 1].id || articles[i - 1]._id;
+            this.laterId = articles[i + 1].id || articles[i + 1]._id;
+          }
+          if (i == 0) {
+            this.former = "温馨提示：目前是第一篇";
+            this.later = this.getArticleName(articles[i + 1]);
+            this.laterId = (articles[i + 1] && (articles[i + 1].id || articles[i + 1]._id)) || "";
+          }
+          if (i == articles.length - 1) {
+            this.former = this.getArticleName(articles[i - 1]);
+            this.later = "温馨提示：目前是最后一篇";
+            this.formerId = (articles[i - 1] && (articles[i - 1].id || articles[i - 1]._id)) || "";
+          }
+        }
+      }
+    },
     buildCatalog() {
       if (!this.$refs.preview || !this.$refs.preview.$el) {
         this.titles = [];
@@ -352,8 +361,10 @@ export default {
       for (let i = 0; i < this.target.length; i++) {
         const domline = this.target[i].getAttribute("data-v-md-line");
         if (domline != line) {
-          document.getElementById(domline).style.color = "dimgray";
-          document.getElementById(domline).style.fontWeight = "500";
+          const dom = document.getElementById(domline);
+          if (!dom) continue;
+          dom.style.color = "dimgray";
+          dom.style.fontWeight = "500";
         }
       }
     },
@@ -429,9 +440,9 @@ export default {
       }
     },
   },
-  beforeMount() {
-    // console.log("空空空？？？", this.articles);
-    window.addEventListener("scroll", this.handleScroll);
+  beforeDestroy() {
+    // 卸载时移除滚动监听，避免重复绑定导致的性能问题。
+    window.removeEventListener("scroll", this.handleScroll);
   },
 };
 </script>

@@ -9,8 +9,6 @@
 <script>
 import Category from '../components/category.vue';
 
-import axios from 'axios'
-
 export default {
     name: "leftComponent",
     components:{
@@ -36,7 +34,7 @@ export default {
         }
     },
     created() {
-        axios({
+        this.$axios({
             method: "get",
             url: "/category/getall",
         })
@@ -54,6 +52,9 @@ export default {
     mounted() {
         //console.log('category组件', this.articleInfo);
         window.addEventListener('scroll', this.handleScroll);
+    },
+    beforeDestroy() {
+        window.removeEventListener('scroll', this.handleScroll);
     }
 }
 </script>

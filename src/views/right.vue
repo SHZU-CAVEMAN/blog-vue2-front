@@ -35,6 +35,9 @@ export default {
     mounted() {
        // console.log('category组件', this.articleInfo);
         window.addEventListener('scroll', this.handleScroll);
+    },
+    beforeDestroy() {
+        window.removeEventListener('scroll', this.handleScroll);
     }
 
 }
