@@ -30,11 +30,25 @@ export default {
     articleLatest,
     Footer,
   },
+  computed: {
+    // 文章列表统一从 Vuex 读取，避免和 sessionStorage 双份存储。
+    articleInfo() {
+      return this.$store.state.articleInfo.article || [];
+    },
+  },
   data() {
     return {
-      articleInfo: [], //存放所有文章
       temp: [], //存放最近的十篇文章
     };
+  },
+  watch: {
+    // 列表变化后同步更新分页首屏数据。
+    articleInfo: {
+      handler() {
+        this.temp = this.articleInfo.slice(0, 10);
+      },
+      immediate: true,
+    },
   },
   methods: {
     onChange(page) {
@@ -49,20 +63,10 @@ export default {
       url: "/articles",
     })
       .then((res) => {
-       
-        for (var i = 0; i < res.data.data.length; i++) {
-          this.articleInfo.unshift(res.data.data[i]); //倒序输出
-        }
-        //vuex存起来
-        this.$store.dispatch("setArticle", this.articleInfo);
-        //sessionStorage存起来
-        sessionStorage.setItem(
-          "article",
-          JSON.stringify(this.$store.state.articleInfo.article)
-        );
-        
-        this.temp = this.articleInfo.slice(0, 10);
-         console.log("文章数据加载：",this.articleInfo);
+        const list = ((res && res.data && res.data.data) || []).slice().reverse();
+        // 只写入 Vuex，避免 Vuex + sessionStorage 的重复存储。
+        this.$store.dispatch("setArticle", list);
+        console.log("文章数据加载：", list);
       })
       .catch((err) => {
         console.log(err);

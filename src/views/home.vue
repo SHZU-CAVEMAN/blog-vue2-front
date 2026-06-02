@@ -35,11 +35,8 @@ export default {
   computed: {
     articleInfo: {
       get() {
-        if (JSON.parse(sessionStorage.getItem('article'))) {
-          return JSON.parse(sessionStorage.getItem('article'));//文章数据从会话存储中获取，vuex刷新后会清除。
-        } else {
-          return this.$store.state.articleInfo.article;
-        }
+        // 文章列表统一从 Vuex 获取，避免重复存储与双数据源不一致。
+        return this.$store.state.articleInfo.article || [];
       }
     }
   },

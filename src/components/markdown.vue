@@ -116,6 +116,9 @@
 </template>
 
 <script>
+const ARTICLE_DETAIL_CACHE_PREFIX = "article:detail:";
+const ARTICLE_DETAIL_CACHE_TTL = 5 * 60 * 1000;
+
 export default {
   name: "markdownComponent",
   props: ["id", "name"],
@@ -170,6 +173,72 @@ export default {
   },
 
   methods: {
+    getArticleCacheKey(id) {
+      return `${ARTICLE_DETAIL_CACHE_PREFIX}${id || ""}`;
+    },
+    // 读取详情缓存：返回 payload 和是否过期标记。
+    getArticleCache(id) {
+      try {
+        const raw = sessionStorage.getItem(this.getArticleCacheKey(id));
+        if (!raw) return null;
+
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.payload) return null;
+
+        const timestamp = parsed.timestamp || 0;
+        const expired = Date.now() - timestamp > ARTICLE_DETAIL_CACHE_TTL;
+
+        return {
+          payload: parsed.payload,
+          expired,
+        };
+      } catch (error) {
+        return null;
+      }
+    },
+    // 仅缓存详情必需字段，避免在会话存储里写入冗余数据。
+    setArticleCache(id, payload) {
+      const cachePayload = {
+        content:
+          payload.content ||
+          payload.markdown ||
+          payload.md ||
+          payload.body ||
+          payload.text ||
+          "",
+        publish_time: payload.publish_time || payload.publishTime || "",
+        category_name: this.getCategoryName(payload) || "",
+      };
+
+      const data = {
+        timestamp: Date.now(),
+        payload: cachePayload,
+      };
+
+      sessionStorage.setItem(this.getArticleCacheKey(id), JSON.stringify(data));
+    },
+    // 将详情数据统一映射到组件状态，避免缓存与接口两处赋值逻辑不一致。
+    applyArticlePayload(payload) {
+      this.text =
+        payload.content ||
+        payload.markdown ||
+        payload.md ||
+        payload.body ||
+        payload.text ||
+        "";
+
+      this.publish_time =
+        payload.publish_time || payload.publishTime || this.publish_time;
+      this.category_name = payload.category_name || this.getCategoryName(payload) || this.category_name;
+    },
+    buildCatalogInNextFrame() {
+      this.$nextTick().then(() => {
+        // markdown 渲染为 DOM 有异步时序，延后一帧提取目录更稳定。
+        setTimeout(() => {
+          this.buildCatalog();
+        }, 0);
+      });
+    },
     // 统一刷新文章详情、目录和上下篇数据，避免把初始化逻辑散落在生命周期里。
     refreshArticle() {
       this.getArticlesCurrent(this.name);
@@ -187,32 +256,28 @@ export default {
       const articleId = encodeURIComponent(this.id);
       const url = `/articles/${articleId}`;
 
+      // 详情缓存策略（SWR）：
+      // 1) 命中缓存先展示，保证切换体验流畅。
+      // 2) 无论缓存是否过期，都在后台再请求一次，确保内容能跟随后端更新。
+      // 3) 请求成功后覆盖缓存和页面数据，避免“改了文章但页面仍旧”的问题。
+      const cache = this.getArticleCache(this.id);
+      if (cache && cache.payload) {
+        this.applyArticlePayload(cache.payload);
+        this.buildCatalogInNextFrame();
+      }
+
       this.$axios({
         method: "get",
         url,
       })
         .then((res) => {
           const payload = res && res.data ? (res.data.data || res.data) : {};
-          this.text =
-            payload.content ||
-            payload.markdown ||
-            payload.md ||
-            payload.body ||
-            payload.text ||
-            "";
+          this.applyArticlePayload(payload);
 
-          // 优先使用详情接口中的发布时间/分类。
-          this.publish_time =
-            payload.publish_time || payload.publishTime || this.publish_time;
-          this.category_name = this.getCategoryName(payload) || this.category_name;
+          // 接口成功后回写缓存，减少后续重复请求。
+          this.setArticleCache(this.id, payload);
         })
-        .then(() => this.$nextTick())
-        .then(() => {
-          // markdown 渲染为 DOM 有异步时序，延后一帧提取目录更稳定。
-          setTimeout(() => {
-            this.buildCatalog();
-          }, 0);
-        })
+        .then(() => this.buildCatalogInNextFrame())
         .catch((err) => {
           // 手动上报文章详情请求异常，附带文章 id/name 便于快速定位问题数据。
           this.$reportError("article-detail-fetch-failed", err, {
@@ -223,8 +288,8 @@ export default {
           });
         });
 
-      // 从 sessionStorage 计算上下篇信息。
-      const articles = JSON.parse(sessionStorage.getItem("article") || "[]");
+      // 上下篇信息统一基于 Vuex 文章列表计算，避免列表重复存储。
+      const articles = this.$store.state.articleInfo.article || [];
       for (let i = 0; i < articles.length; i++) {
         if (this.getArticleName(articles[i]) == this.name) {
           this.publish_time =
@@ -332,7 +397,7 @@ export default {
     },
     // 获取当前同分类文章列表
     getArticlesCurrent(name) {
-      const articles = JSON.parse(sessionStorage.getItem("article") || "[]");
+      const articles = this.$store.state.articleInfo.article || [];
       this.articlesCurrent = [];
 
       const current = articles.find(
