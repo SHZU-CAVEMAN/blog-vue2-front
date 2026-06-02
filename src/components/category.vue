@@ -43,12 +43,13 @@
 <script>
 export default {
     name: "categoryComponent",
-    data() {
-        return {
-            category: [],
-        }
-    },
     props: ["articleInfo"],
+    computed: {
+        // 分类数据统一从 Vuex 读取，确保多处组件复用同一份数据。
+        category() {
+            return this.$store.state.articleInfo.category || [];
+        },
+    },
     watch: {
         articleInfo: {
             // 直接基于已拿到的文章列表生成分类统计，避免重复请求 /category/getall。
@@ -82,9 +83,12 @@ export default {
                 map[name] += 1;
             });
 
-            this.category = Object.keys(map)
+            const categoryStats = Object.keys(map)
                 .map((name) => ({ name, number: map[name] }))
                 .sort((a, b) => b.number - a.number);
+
+            // 将分类统计结果写入 Vuex，供其它组件直接读取复用。
+            this.$store.dispatch("setCategory", categoryStats);
         },
         // 点击分类，跳转到分类页面（onFile.vue），并把分类名传过去
         jump(name) {
