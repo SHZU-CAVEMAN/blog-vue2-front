@@ -8,6 +8,7 @@ import ant from 'ant-design-vue';
 import "ant-design-vue/dist/antd.css"
 import * as echarts from 'echarts';//这样引用为什么不行？：import echarts from 'echarts';
 import CommonComponents from './components/common';
+import { initErrorMonitor } from './tools/errorMonitor';
 
 
 //1 引入markdown编辑器和vuepress主题：
@@ -51,6 +52,13 @@ Vue.use(ant);
 Vue.use(VueLazyload);
 Vue.use(CommonComponents);
 Vue.prototype.$echarts = echarts;
+
+// 初始化全局错误监控：统一采集 Vue/JS/Promise/Axios 错误。
+// reportUrl 先留空，后续可替换成你的日志服务地址。
+initErrorMonitor(Vue, axios, {
+  appName: 'blog-vue2-front',
+  reportUrl: '',
+});
 
 
 new Vue({

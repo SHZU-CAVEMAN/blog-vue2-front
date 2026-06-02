@@ -20,33 +20,68 @@ export default {
   name: "noticeComponent",
   data() {
     return {
-      address:' XX ',
+      // 默认回退文案：接口超时/失败时也能给用户稳定展示。
+      address: "未知地区",
     }
   },
-  created() {
-    // console.log('notice组件')
-    //挂载的时候，store异步请求的数据还没有收到。可以用watch监听。
-    // this.address = this.$store.state.user.ip.regionName;
+  methods: {
+    // 封装带超时的请求：超时后主动 reject，避免页面长期等待外部接口。
+    requestWithTimeout(config, timeout = 3000) {
+      return Promise.race([
+        this.$axios(config),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("IP_API_TIMEOUT")), timeout);
+        }),
+      ]);
+    },
+    // 获取访客地址：任一步异常都走 fallback，保证公告组件始终可用。
+    fetchAddress() {
+      // 串行请求1：先获取访客 公网 IP 地址。
+      this.requestWithTimeout(
+        {
+          method: "get",
+          url: "http://api.ipify.org/?format=json",
+        },
+        3000
+      )
+        .then((res) => {
+          const ip = res && res.data ? res.data.ip : "";
+          if (!ip) {
+            throw new Error("IP_EMPTY");
+          }
+          // 串行请求2：拿到 IP 后再请求地理位置，接口异常同样走 fallback。
+          return this.requestWithTimeout(
+            {
+              method: "get",
+              url: "http://ip-api.com/json/" + ip,
+            },
+            3000
+          );
+        })
+        .then((res) => {
+          //console.log("ip信息：", res.data);
 
-    //使用axios获取ip
-    this.$axios({
-      method: "get",
-      url: "http://api.ipify.org/?format=json",
-    })
-      .then((res) => {
-        return this.$axios.get('http://ip-api.com/json/' + res.data.ip)
-      })
-      .then((res) => {
-        console.log("ip信息：", res.data);
-        // this.address = translate(res.data.city);
-        this.address =   res.data.city
-        this.$store.dispatch("setIp", res.data);//存入store
-        console.log('ip地址存入store', this.$store.state.user.ip);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
+          const city = (res && res.data && res.data.city) || "";
+          this.address = city || "未知地区";
+
+          // 请求成功时更新 Vuex，供其它组件复用。
+          this.$store.dispatch("setIp", res.data);
+          //console.log("ip地址存入store", this.$store.state.user.ip);
+        })
+        .catch((err) => {
+          // 接口超时或失败时回退到默认文案，避免显示空白或报错中断。
+          // 手动上报业务上下文，便于区分是 IP 获取链路失败，而不是普通网络错误。
+          this.$reportError("notice-ip-fetch-failed", err, {
+            module: "notice",
+            fallbackAddress: "未知地区",
+          });
+          this.address = "未知地区";
+        });
+    },
+  },
+  created() {
+    this.fetchAddress();
+  },
 };
 </script>
 

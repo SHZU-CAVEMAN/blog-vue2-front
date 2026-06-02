@@ -117,6 +117,15 @@ export default {
                 // 重置编辑器内容并关闭信息弹窗，避免重复提交旧内容。
                 this.comment = "";
                 this.visible = false;
+            }).catch((err) => {
+                // 手动上报评论提交异常，携带文章和回复上下文，方便后续定位具体失败场景。
+                this.$reportError("comment-submit-failed", err, {
+                    module: "commentEdit",
+                    articleName: this.articleName,
+                    toWhich: this.toWhich || "",
+                    toWhom: this.toWhom || "",
+                    hasCommentContent: !!this.comment,
+                });
             });
         },
         commit() {

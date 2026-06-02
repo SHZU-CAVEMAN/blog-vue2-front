@@ -214,8 +214,13 @@ export default {
           }, 0);
         })
         .catch((err) => {
-          console.log("请求文章出错！");
-          return Promise.reject(err);
+          // 手动上报文章详情请求异常，附带文章 id/name 便于快速定位问题数据。
+          this.$reportError("article-detail-fetch-failed", err, {
+            module: "markdown",
+            articleId: this.id,
+            articleName: this.name,
+            requestUrl: url,
+          });
         });
 
       // 从 sessionStorage 计算上下篇信息。
