@@ -1,23 +1,153 @@
-基于Vue2.0，Express.js，Ant-Design-Vue
+# LiaoHaitao Blog Frontend
 
-支持博客的基本功能：
-- 评论功能
-- 目录导航索引
-- 分类归档
+一个基于 Vue 2 + Vue CLI 的博客前台项目，支持文章列表、文章详情 Markdown 渲染、目录导航索引、评论系统、分类归档、公告信息等。
 
-1、启动：
+后端默认对接 Express 服务。
+
+## 功能特性
+
+- 清晰的分层架构：页面层、业务组件层、公共组件层、工具层、数据层职责明确
+- 统一请求治理：axios 实例、拦截器、API 封装统一管理，避免请求散落与重复实现
+- 全局错误监控：覆盖 Vue 运行时错误、Promise 异常、HTTP 异常，便于线上定位与回溯
+- 状态单一数据源：核心数据通过 Vuex 统一管理，减少多处存储导致的不一致问题
+- 可维护的组件化能力：业务组件与通用组件拆分，提升复用性与迭代效率
+- 性能工程实践：按需加载、路由懒加载、关键路径减负，关注 FCP/LCP/TBT 等指标
+- 可配置部署能力：开发代理与生产同源部署策略清晰，便于联调、测试与上线
+
+## 技术栈
+
+- Vue 2.6.14
+- Vue Router 3
+- Vuex 3
+- Vue CLI 5
+- Ant Design Vue 1.7
+- axios
+- @kangc/v-md-editor
+
+## 目录结构
+
+```text
+src/
+	api/                # 统一 API 封装
+	assets/             # 静态资源
+	components/         # 业务组件
+	components/common/  # 公共组件
+	router/             # 路由配置
+	store/              # Vuex 模块
+	tools/              # 工具模块（request、errorMonitor 等）
+	views/              # 页面级视图
+	App.vue
+	main.js
 ```
-npm intall
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+npm install
 ```
-安装Ant-Design-Vue依赖时可能会报错。因为项目中使用了eslint检验。命令后面加一句--legacy-peer-deps，告诉eslint忽略掉不同版本的问题并继续安装，保证各个引入的依赖之间对自身所使用的不同版本modules共存。
- --legacy-peer-deps：在安装时忽略所有 peerDependencie。
- 
-2、运行：
+
+如果你本地 Node 版本较新，出现 peer 或 engine 警告，可以尝试：
+
+```bash
+npm install --legacy-peer-deps
 ```
+
+### 2. 本地开发
+
+```bash
 npm run serve
 ```
-3、打包：
-```
+
+默认前端运行在 `http://localhost:8080`。
+
+### 3. 生产构建
+
+```bash
 npm run build
 ```
-将打包后dist文件夹的内容复制到后端根目录下public夹中，然后运行后端主文件即可。
+
+构建产物在 `dist/`。
+
+## 请求与环境配置
+
+统一请求入口位于 `src/tools/request.js`。
+
+当前配置：
+
+- `SERVICE_ORIGIN = ""`
+- axios `baseURL = SERVICE_ORIGIN`
+
+这意味着：
+
+- 开发环境下走 `vue.config.js` 的代理（`devServer.proxy`）
+- 生产环境建议前后端同源部署
+
+### 开发环境代理
+
+`vue.config.js` 已配置：
+
+- 前端端口：`8080`
+- 代理目标：`http://localhost:81`
+
+即前端请求 `/articles` 会由开发服务器转发到后端 `81` 端口。
+
+### 生产环境推荐部署方式
+
+1. 执行 `npm run build`
+2. 将 `dist` 内容放到后端可静态托管目录（例如 Express 的 `public`）
+3. 由后端统一提供页面与 API
+
+## 统一 API 说明
+
+`src/api/index.js` 已封装：
+
+- article
+	- `getAll`
+	- `getDetail`
+	- `getAllCategories`
+- comment
+	- `getAll`
+	- `add`
+	- `sendVerifyEmail`
+	- `uploadAvatar`
+- system
+	- `getPublicIp`
+	- `getGeoByIp`
+
+组件内推荐通过 `this.$api.xxx` 调用，不直接散写 axios。
+
+
+## 可用脚本
+
+- `npm run serve` 启动开发环境
+- `npm run build` 生产构建
+- `npm run lint` 代码检查
+
+## 常见问题
+
+### 1) 接口 404，但页面能打开
+
+常见原因是端口上跑的是静态服务而不是后端 API 服务。
+
+排查思路：
+
+- 确认后端是否真的在目标端口监听
+- 确认前端请求前缀与代理目标一致
+- 避免静态服务器与后端占用同一端口冲突
+
+### 2) 本地 Node 版本过新出现依赖告警
+
+这是旧依赖生态常见现象，通常不影响运行。
+建议优先使用 LTS 版本（Node 16/18/20）进行构建与部署验证。
+
+## 后续建议
+
+- 增加 `.env.development` / `.env.production`，将服务地址配置化
+- 补充单元测试与 e2e 测试
+- 增加构建产物体积分析（webpack-bundle-analyzer）
+
+## License
+
+仅用于学习与个人项目实践。
