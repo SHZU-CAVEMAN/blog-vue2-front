@@ -13,12 +13,13 @@ const ob = new IntersectionObserver((entries)=>{
 
 })
 function isBelowViewport(el){
-    const rect = el.getBounddingClientRect()
+    const rect = el.getBoundingClientRect()
     return rect.top > window.innerHeight
 }
 export default{
     mounted(el){
-        if (!isBelowViewport){
+        // 首屏元素不做入场动画，避免推迟 LCP；只对首屏以下元素执行动画。
+        if (!isBelowViewport(el)){
             return 
         }
         // 两个入参：关键帧（一个数组），动画配置对象
@@ -35,7 +36,7 @@ export default{
             ],
             {
                 duration:DURATION,
-                esseing: 'ease-out',
+                easing: 'ease-out',
                 fill: 'forwards',
             }
             

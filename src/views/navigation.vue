@@ -228,10 +228,10 @@ export default {
    margin-bottom: 1.2vh
 }
 /* 悬浮更改样式时，为什么会有延时？ */
-a:hover{
-   /* font-weight: 550; */
-   /* color:black; */
-}
+/* a:hover{
+   font-weight: 550; 
+   color:black;
+} */
 
 #blogger:hover {
    text-decoration: underline;

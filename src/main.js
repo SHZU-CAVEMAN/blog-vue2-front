@@ -1,63 +1,108 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import axios from 'axios';
 import store from './store';
 import VueLazyload from 'vue-lazyload';//图片懒加载
-import ant from 'ant-design-vue';
-import "ant-design-vue/dist/antd.css"
-import * as echarts from 'echarts';//这样引用为什么不行？：import echarts from 'echarts';
+import { Icon, BackTop, Pagination, Dropdown, Menu } from 'ant-design-vue';
 import CommonComponents from './components/common';
 import { initErrorMonitor } from './tools/errorMonitor';
+import request, { SERVICE_ORIGIN } from './tools/request';
+import api from './api';
 
+let markdownRuntimeReady = false;
+let markdownRuntimeLoading = null;
 
-//1 引入markdown编辑器和vuepress主题：
-import VueMarkdownEditor from '@kangc/v-md-editor';
-import '@kangc/v-md-editor/lib/style/base-editor.css';
-// import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js';
-// import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
-// import Prism from 'prismjs';
-// VueMarkdownEditor.use(vuepressTheme, {
-//   Prism,
-// });
-import creatPrismTheme from '@kangc/v-md-editor/lib/theme/prism';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-const prismTheme = creatPrismTheme({
-  Prism,
-});
-VueMarkdownEditor.theme(prismTheme);
-Vue.use(VueMarkdownEditor);
-//2 引入markdown解析（预览）组件和gihub主题：
-import VMdPreview from '@kangc/v-md-editor/lib/preview';
-import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
-import '@kangc/v-md-editor/lib/theme/style/github.css';
-import hljs from 'highlight.js';
-VMdPreview.use(githubTheme, {
-  Hljs: hljs,
-});
-Vue.use(VMdPreview);
-//3 引入html预览组件：(没屁用，不引入也罢。引入markdown预览组件就够了，md的那些符号都会解析成html和css)
-// import VMdPreviewHtml from '@kangc/v-md-editor/lib/preview-html';
-// Vue.use(VMdPreviewHtml);
-//4 引入表情
-import createEmojiPlugin from '@kangc/v-md-editor/lib/plugins/emoji/index';
-import '@kangc/v-md-editor/lib/plugins/emoji/emoji.css';
-VueMarkdownEditor.use(createEmojiPlugin());
+// 首屏优化：Markdown 编辑器/预览仅在进入文章详情页时按需加载，避免首页 FCP 被重型依赖阻塞。
+function ensureMarkdownRuntime() {
+  if (markdownRuntimeReady) {
+    return Promise.resolve();
+  }
+  if (markdownRuntimeLoading) {
+    return markdownRuntimeLoading;
+  }
+
+  markdownRuntimeLoading = Promise.all([
+    import('@kangc/v-md-editor'),
+    import('@kangc/v-md-editor/lib/style/base-editor.css'),
+    import('@kangc/v-md-editor/lib/theme/prism'),
+    import('prismjs'),
+    import('prismjs/components/prism-json'),
+    import('@kangc/v-md-editor/lib/preview'),
+    import('@kangc/v-md-editor/lib/theme/github.js'),
+    import('@kangc/v-md-editor/lib/theme/style/github.css'),
+    import('highlight.js'),
+    import('@kangc/v-md-editor/lib/plugins/emoji/index'),
+    import('@kangc/v-md-editor/lib/plugins/emoji/emoji.css'),
+  ]).then(([
+    editorModule,
+    ,
+    prismThemeModule,
+    prismModule,
+    ,
+    previewModule,
+    githubThemeModule,
+    ,
+    hljsModule,
+    emojiPluginModule,
+  ]) => {
+    const VueMarkdownEditor = editorModule.default;
+    const createPrismTheme = prismThemeModule.default;
+    const Prism = prismModule.default || prismModule;
+    const VMdPreview = previewModule.default;
+    const githubTheme = githubThemeModule.default;
+    const hljs = hljsModule.default || hljsModule;
+    const createEmojiPlugin = emojiPluginModule.default;
+
+    VueMarkdownEditor.theme(createPrismTheme({ Prism }));
+    VueMarkdownEditor.use(createEmojiPlugin());
+    VMdPreview.use(githubTheme, { Hljs: hljs });
+
+    Vue.use(VueMarkdownEditor);
+    Vue.use(VMdPreview);
+    markdownRuntimeReady = true;
+  }).catch((error) => {
+    markdownRuntimeLoading = null;
+    throw error;
+  });
+
+  return markdownRuntimeLoading;
+}
 
 
 Vue.config.productionTip = false;//关闭生产者提示
-Vue.prototype.$axios = axios;
-Vue.use(ant);
+Vue.prototype.$request = request;
+Vue.prototype.$api = api;
+Vue.prototype.$uploadFilesBase = `${SERVICE_ORIGIN}/uploadFiles/`;
+Vue.use(Icon);
+Vue.use(BackTop);
+Vue.use(Pagination);
+Vue.use(Dropdown);
+Vue.use(Menu);
 Vue.use(VueLazyload);
 Vue.use(CommonComponents);
-Vue.prototype.$echarts = echarts;
+Vue.prototype.$getEcharts = () => import('echarts');
 
 // 初始化全局错误监控：统一采集 Vue/JS/Promise/Axios 错误。
 // reportUrl 先留空，后续可替换成你的日志服务地址。
-initErrorMonitor(Vue, axios, {
+initErrorMonitor(Vue, request, {
   appName: 'blog-vue2-front',
   reportUrl: '',
+});
+
+router.beforeEach((to, from, next) => {
+  // 仅详情页依赖 Markdown 运行时：首页无需等待这批大依赖，优先让首屏先渲染出来。
+  if (to.name !== 'articleViewComponent') {
+    next();
+    return;
+  }
+
+  ensureMarkdownRuntime()
+    .then(() => next())
+    .catch((error) => {
+      console.error('Markdown runtime load failed:', error);
+      // 降级策略：即使加载失败也继续导航，避免整页白屏。
+      next();
+    });
 });
 
 
@@ -96,11 +141,3 @@ router.beforeResolve((to, from, next) => {
   next();
 });
 
-// aixos请求携带上 token
-axios.interceptors.request.use(config => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = token;
-  }
-  return config;
-});
