@@ -34,20 +34,7 @@ export default {
         }
     },
     created() {
-        this.$axios({
-            method: "get",
-            url: "/category/getall",
-        })
-            .then((res) => {
-                this.length = res.data.data.length;
-                for (var i = 0; i < this.length; i++) {
-                    this.arr.unshift(res.data.data[i]); //倒序输出
-                }
-                //console.log("文章目录数据：",this.arr);
-            })
-            .catch((err) => {
-                console.log("left.vue:",err);
-            })
+        // 分类数据已可由文章列表聚合得到，这里不再重复请求，减轻首屏网络竞争。
     },
     mounted() {
         //console.log('category组件', this.articleInfo);

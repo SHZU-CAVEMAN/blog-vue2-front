@@ -48,10 +48,10 @@ export default {
 
   computed: {
     pictureUrl() {
-      return "/uploadFiles/" + this.article.picture;
+      return this.$uploadFilesBase + this.article.picture;
     },
     placeholder() {
-      return "/uploadFiles/" + 'zipped_' + this.article.picture;
+      return this.$uploadFilesBase + 'zipped_' + this.article.picture;
     }
   },
   props: ["article"],

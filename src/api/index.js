@@ -1,0 +1,42 @@
+import request from "../tools/request";
+
+const api = {
+  article: {
+    getAll() {
+      return request.get("/articles");
+    },
+    getDetail(id) {
+      return request.get(`/articles/${encodeURIComponent(id)}`);
+    },
+    getAllCategories() {
+      return request.get("/category/getall");
+    },
+  },
+  comment: {
+    getAll() {
+      return request.get("/comment/getall");
+    },
+    add(data) {
+      return request.post("/comment/add", data);
+    },
+    sendVerifyEmail(email) {
+      return request.post("/verify/email", { email });
+    },
+    uploadAvatar(formData) {
+      return request.post("/upload-single-file", formData);
+    },
+  },
+  system: {
+    getPublicIp() {
+      return request.get("http://api.ipify.org/?format=json");
+    },
+    getGeoByIp(ip) {
+      return request.get(`https://ip-api.com/json/${ip}`);
+    },
+  },
+  request(config) {
+    return request(config);
+  },
+};
+
+export default api;

@@ -266,10 +266,7 @@ export default {
         this.buildCatalogInNextFrame();
       }
 
-      this.$axios({
-        method: "get",
-        url,
-      })
+      this.$api.article.getDetail(this.id)
         .then((res) => {
           const payload = res && res.data ? (res.data.data || res.data) : {};
           this.applyArticlePayload(payload);

@@ -12,7 +12,7 @@
             <!-- 一级评论 -->
             <!-- 如果toWhich无值，则-->
             <div v-if="!Acomment.toWhich" class="comment_item">
-                <img :src="pictureUrl + Acomment.avatar " />
+                <img :src="avatarUrl(Acomment.avatar)" />
                 <div class="content">
                     <!-- <h6>{{ Acomment.nickname }}</h6> -->
                     <div class="content_name">
@@ -41,7 +41,7 @@
             <div v-for="Bcomment in commentListByProps" :key="Bcomment.id" style="margin-left: 8%;">
 
                 <div v-if="Acomment.id == Bcomment.toWhich" class="comment_item">
-                    <img :src="pictureUrl + Bcomment.avatar " />
+                    <img :src="avatarUrl(Bcomment.avatar)" />
                     <div class="content">
                         <div style="display: flex;align-items: center;">
                             <div class="content_name">
@@ -103,7 +103,6 @@ export default {
          
             likeNumber: "", // 某条评论的点赞数量（此功能暂废弃 ————7.13）
             commentListByProps: [],
-            pictureUrl: "/uploadFiles/",
             // theme:'',
             isLike: false,
             isLikeId: "",
@@ -140,6 +139,9 @@ export default {
                 return [];
             }
             return this.allComments.filter((item) => item.article == this.name);
+        },
+        avatarUrl(fileName) {
+            return this.$uploadFilesBase + fileName;
         },
         Replyto(id, comment) {
             // 允许被无参调用（例如总线触发关闭），防止访问 undefined 报错。

@@ -26,9 +26,9 @@ export default {
   },
   methods: {
     // 封装带超时的请求：超时后主动 reject，避免页面长期等待外部接口。
-    requestWithTimeout(config, timeout = 3000) {
+    requestWithTimeout(requestPromise, timeout = 3000) {
       return Promise.race([
-        this.$axios(config),
+        requestPromise,
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error("IP_API_TIMEOUT")), timeout);
         }),
@@ -38,10 +38,7 @@ export default {
     fetchAddress() {
       // 串行请求1：先获取访客 公网 IP 地址。
       this.requestWithTimeout(
-        {
-          method: "get",
-          url: "http://api.ipify.org/?format=json",
-        },
+        this.$api.system.getPublicIp(),
         3000
       )
         .then((res) => {
@@ -51,10 +48,7 @@ export default {
           }
           // 串行请求2：拿到 IP 后再请求地理位置，接口异常同样走 fallback。
           return this.requestWithTimeout(
-            {
-              method: "get",
-              url: "http://ip-api.com/json/" + ip,
-            },
+            this.$api.system.getGeoByIp(ip),
             3000
           );
         })
@@ -80,7 +74,7 @@ export default {
     },
   },
   created() {
-    this.fetchAddress();
+    //this.fetchAddress();
   },
 };
 </script>

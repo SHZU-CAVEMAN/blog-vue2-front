@@ -3,7 +3,26 @@
   <div class="bloggerIntro">
     <br />
     <div style="text-align: center">
-      <image-load :src="pictureUrl" :placeholder="placeholder" :duration="500" class="imageLoad" />
+      <!--
+        头像图像优化：
+        1) 优先使用 AVIF/WebP 等现代格式；
+        2) 默认走压缩版 JPG，降低下载体积；
+        3) 固定 width/height，减少布局抖动（CLS）。
+      -->
+      <picture>
+        <source :srcset="pictureAvifUrl" type="image/avif" />
+        <source :srcset="pictureWebpUrl" type="image/webp" />
+        <img
+          class="avatar"
+          :src="pictureCompressedUrl"
+          width="130"
+          height="130"
+          loading="lazy"
+          decoding="async"
+          alt="博主头像"
+          @error="handleAvatarError"
+        />
+      </picture>
 
       <br />
       <h5 style="color: dimgray">Liao</h5>
@@ -49,22 +68,31 @@
 </template>
 
 <script>
-import imageLoad from "../tools/imageLoad.vue";
-
 export default {
   name: "bloggerIntroComponent",
-  components: {
-    imageLoad,
-  },
   data() {
     return {};
   },
   computed: {
-    pictureUrl() {
-      return "/uploadFiles/" + "zhishui.jpg";
+    // 原图兜底地址：当现代格式或压缩图不存在时回退。
+    pictureOriginUrl() {
+      return this.$uploadFilesBase + "zhishui.jpg";
     },
-    placeholder() {
-      return "/uploadFiles/" + "zipped_" + "zhishui.jpg";
+    // 压缩版 JPG 作为默认 src，优先降低首屏字节体积。
+    pictureCompressedUrl() {
+      return this.$uploadFilesBase + "zipped_zhishui.jpg";
+    },
+    pictureWebpUrl() {
+      return this.$uploadFilesBase + "zhishui.webp";
+    },
+    pictureAvifUrl() {
+      return this.$uploadFilesBase + "zhishui.avif";
+    },
+  },
+  methods: {
+    handleAvatarError(event) {
+      // 若压缩版缺失或加载失败，自动回退到原图，避免头像空白。
+      event.target.src = this.pictureOriginUrl;
     },
   },
 };
@@ -120,12 +148,11 @@ path {
   fill: black;
 }
 
-.imageLoad>>>img {
+.avatar {
   width: 130px;
   height: 130px;
-  /* width: 50%; 
-  height: 50%; */
   border-radius: 50%;
+  object-fit: cover;
 }
 
 img {

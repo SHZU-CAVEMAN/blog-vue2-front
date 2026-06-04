@@ -190,8 +190,8 @@ export default {
             });
             //图片发送给服务器(进行判断，点击提交之后再发送)
             // if (this.flagCommit) {
-            this.$axios
-                .post("/upload-single-file", formdata)
+            this.$api.comment
+                .uploadAvatar(formdata)
                 .then(() => {
                     // console.log(res);
                 }); //打印响应体
@@ -223,13 +223,7 @@ export default {
                 this.email1 = this.email;
                 this.nickname1 = this.nickname;
                 this.avatar1 = this.avatar;
-                this.$axios({
-                    method: "post",
-                    url: "/verify/email",
-                    data: {
-                        email: this.email,
-                    },
-                }).then((res) => {
+                this.$api.comment.sendVerifyEmail(this.email).then((res) => {
                     // 打印错误信息
                     // this.info = res.data
                     this.verifyFromServe = res.data.data;

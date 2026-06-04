@@ -58,10 +58,7 @@ export default {
     },
   },
   created() {
-    this.$axios({
-      method: "get",
-      url: "/articles",
-    })
+    this.$api.article.getAll()
       .then((res) => {
         const list = ((res && res.data && res.data.data) || []).slice().reverse();
         // 只写入 Vuex，避免 Vuex + sessionStorage 的重复存储。

@@ -122,7 +122,7 @@ export default {
 			this.avatar = file.name;
 			const formdata = new FormData();
 			formdata.append("file1", file);
-			this.$axios.post("/upload-single-file", formdata).then(() => {});
+			this.$api.comment.uploadAvatar(formdata).then(() => {});
 
 			const reader = new FileReader();
 			reader.onload = (event) => {
@@ -142,13 +142,7 @@ export default {
 			this.savedAvatar = this.avatar;
 			this.verifyMsg = "";
 
-			this.$axios({
-				method: "post",
-				url: "/verify/email",
-				data: {
-					email: this.email,
-				},
-			}).then((res) => {
+			this.$api.comment.sendVerifyEmail(this.email).then((res) => {
 				this.verifyFromServe = res.data.data;
 			});
 		},

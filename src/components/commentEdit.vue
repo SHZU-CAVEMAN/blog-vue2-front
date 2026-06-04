@@ -93,23 +93,19 @@ export default {
                 this.avatar = Math.floor(Math.random() * 9 + 1)+'.jpg';
             }
             // console.log('最终数据', this.nickname, this.email, this.avatar, this.articleName, this.time)
-            this.$axios({
-                method: "post",
-                url: "/comment/add",
-                data: {
-                    // 来自子组件的三项数据：
-                    nickname: this.nickname,
-                    email: this.email,
-                    avatar: this.avatar,
-                    //来自于自身的三项数据：
-                    other: this.other, //可以为空(此属性可以更改为IP)
-                    comment: this.comment,
-                    time: this.time,
-                    // 来自父组件的三项数据：
-                    article: this.articleName, //评论所属的文章名（唯一）
-                    toWhich: this.toWhich || '', //可以为空，为空，则表示这是一个一级评论（支持两级评论）
-                    toWhom: this.toWhom || '',
-                },
+            this.$api.comment.add({
+                // 来自子组件的三项数据：
+                nickname: this.nickname,
+                email: this.email,
+                avatar: this.avatar,
+                //来自于自身的三项数据：
+                other: this.other, //可以为空(此属性可以更改为IP)
+                comment: this.comment,
+                time: this.time,
+                // 来自父组件的三项数据：
+                article: this.articleName, //评论所属的文章名（唯一）
+                toWhich: this.toWhich || '', //可以为空，为空，则表示这是一个一级评论（支持两级评论）
+                toWhom: this.toWhom || '',
             }).then((res) => {
                 console.log("提交评论成功", res);
                 // 评论提交成功后通知根组件刷新评论列表，保证当前页面实时可见。

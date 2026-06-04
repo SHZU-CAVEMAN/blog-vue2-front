@@ -23,7 +23,7 @@ export default {
   name: 'App',
   components: {
     navigation,
-},
+  },
   methods:{
     click(){
       // console.log('返回顶部',e.target)
@@ -31,10 +31,7 @@ export default {
     },
     // 统一评论请求入口：初始化与新增评论后都复用这个方法，避免散落的重复实现。
     fetchComments() {
-      this.$axios({
-        method: "get",
-        url: "/comment/getall",
-      })
+      this.$api.comment.getAll()
         .then((res) => {
           // 评论数据统一写入 store，避免和 props 并存导致双数据源。
           this.$store.dispatch("setComment", res.data.data);
@@ -47,9 +44,18 @@ export default {
     handleCommentAdded() {
       this.fetchComments();
     },
+    deferFetchComments() {
+      // 评论不是首屏关键内容，延后到首屏绘制后请求，减少 LCP 竞争。
+      const run = () => this.fetchComments();
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        window.requestIdleCallback(run, { timeout: 1500 });
+        return;
+      }
+      setTimeout(run, 0);
+    },
   },
   created() {
-    this.fetchComments();
+    this.deferFetchComments();
     // 监听评论新增事件，实现“提交后仅刷新评论”而不是整页刷新。
     this.$bus.$on("commentAdded", this.handleCommentAdded);
   },
