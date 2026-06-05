@@ -99,10 +99,6 @@ export default {
 
 }
 
-h5 {
-  font-weight: 550;
-  color: rgb(70, 70, 70)
-}
 
 h5:hover {
   color: rgb(45, 150, 189)
@@ -116,7 +112,7 @@ h5:hover {
 
 
   width: 50%;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   padding:1vh;
   border: 1px solid rgb(208, 215, 222);
   
@@ -137,13 +133,13 @@ h5:hover {
 }
 .intro {
   margin-top:2vh;
-  font-size: 0.9rem;
+  font-size: var(--font-size-md);
   padding: 1vh;
   /* background-color: #EFF2F5; */
   background-color: #ffffff;
 
   max-height: 4.5rem;
-  line-height: 1.3rem;
+  line-height: var(--line-height-normal);
   overflow: hidden;
 
   overflow-y:scroll;
@@ -156,12 +152,12 @@ h5:hover {
 
 
 .description {
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   background-color: #F3F4F6;
   margin-left: 2%;
   margin-top: 1vh;
   max-height: 4.5rem;
-  line-height: 1.5rem;
+  line-height: var(--line-height-normal);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: pre-line;
@@ -220,7 +216,7 @@ h5:hover {
 
 #category {
   color: dimgray;
-  font-size: 15px;
+  font-size: var(--font-size-md);
   background-color: #F6F8FA;
   padding: 0.8vh 2vh;
   border: 1px solid rgb(208, 215, 222);

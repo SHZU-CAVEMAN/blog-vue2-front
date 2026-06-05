@@ -1,0 +1,103 @@
+:root {
+  --font-family-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+  --font-family-brand: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+
+  --font-size-md: 0.875rem;
+  --font-size-xl: 1rem;
+  --font-size-xxl: 1.25rem;
+
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
+
+  --font-weight-medium: 800;
+
+  --text-color-primary: #2f3437;
+  --text-color-secondary: #5c6773;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--text-color-primary);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--text-color-primary);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+}
+
+h1,
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3,
+h4 {
+  font-size: var(--font-size-md);
+}
+
+h5,
+h6 {
+    font-size: var(--font-size-xxl);
+    line-height: 2;
+}
+
+p,
+li,
+span,
+div,
+a {
+  line-height: var(--line-height-normal);
+}
+
+small {
+  font-size: var(--font-size-md);
+}
+
+.markdown-body,
+.v-md-editor,
+.v-md-editor-preview {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+}
+
+.text-caption {
+  font-size: var(--font-size-md);
+  color: var(--text-color-secondary);
+}
+
+.text-body {
+  font-size: var(--font-size-md);
+}
+
+.text-subtitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+}
+
+.text-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+}

@@ -105,7 +105,7 @@ export default {
   gap: 2%;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 2%;
+  padding: 0 2% 0 0;
 }
 
 .sidebar {

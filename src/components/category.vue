@@ -3,9 +3,9 @@
 <template>
     <div class="category">
         <div style="margin-left: 5%; margin-right: 5%; padding-top: 0%">
-            <div style="background-color:#ffffff;display:flex;align-items: center;">
-                <a-icon type="folder" theme="filled" style="font-size: 3vh;" />
-                <h6 style="margin:5px 0 5px 2vh;display:inline-block;font-weight: 550;color:dimgray">
+            <div class="category-head">
+                <a-icon type="folder" theme="filled" class="panel-icon" />
+                <h6 class="panel-title">
                     分 类
                 </h6>
             </div>
@@ -14,7 +14,7 @@
             <div class="content">
                  <!-- 总计 -->
                  <div style="margin: 2vh 0;">
-                    <div @click="jump('total')" class="total">
+                    <div @click="jump('total')" :class="{ 'total-active': isCategoryActive('total') }" class="total">
                         <div >
                             Total
                         </div>
@@ -26,7 +26,7 @@
                 </div>
 
                 <div v-for="item in category" :key="item" style="margin-top: 0.5vh;">
-                    <div id="category" @click="jump(item.name)">
+                    <div :class="{ 'category-item-active': isCategoryActive(item.name) }" class="category-item" @click="jump(item.name)">
                         <div >
                             {{ item.name }}
                         </div>
@@ -48,6 +48,11 @@ export default {
         // 分类数据统一从 Vuex 读取，确保多处组件复用同一份数据。
         category() {
             return this.$store.state.articleInfo.category || [];
+        },
+        currentCategoryName() {
+            // 分类列表的选中态由当前路由决定，刷新页面或前进后退时也能保持一致。
+            if (this.$route.name !== "onFile") return "";
+            return this.$route.query.name || "";
         },
     },
     watch: {
@@ -90,6 +95,9 @@ export default {
             // 将分类统计结果写入 Vuex，供其它组件直接读取复用。
             this.$store.dispatch("setCategory", categoryStats);
         },
+        isCategoryActive(name) {
+            return this.currentCategoryName === name;
+        },
         // 点击分类，跳转到分类页面（onFile.vue），并把分类名传过去
         jump(name) {
             // console.log("点击事件没问题",name)
@@ -126,7 +134,8 @@ export default {
     width: 100%;
     height: auto;
     margin-left: 0%;
-    margin-top: 8%;
+    margin-top: 0;
+    padding-top: 3vh;
     /* border-radius: 1vh; */
     /* box-shadow: 0px 4px 6px 2px rgb(223, 223, 223); */
     /* border: 1px solid rgb(208, 215, 222); */
@@ -136,18 +145,38 @@ export default {
     padding-bottom: 2vh;
 }
 
-#category {
+.category-head {
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+}
+
+.panel-icon {
+    font-size: var(--font-size-xl);
+}
+
+.panel-title {
+    margin: 5px 0 5px 2vh;
+    display: inline-block;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-medium);
+    color: dimgray;
+}
+
+.category-item {
     background-color: #EFF2F5;
     width: 90%;
     margin-left: 5%;
     padding: 0 2vh;
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
 
 }
 
-#category:hover {
+.category-item:hover,
+.category-item-active {
     /* background-color:lightgray; */
     background-color: #EFF8FF;
     color: rgb(0, 0, 0);
@@ -160,11 +189,11 @@ export default {
     width:90%;
     margin-left: 5%;
     padding:0 2vh;
-    font-size: 1rem;
+    font-size: var(--font-size-md);
     /* background-color: #EFF2F5; */
     background-color: #707070;
     color:white;
-    font-weight: 550;
+    font-weight: var(--font-weight-medium);
 
 
     border-radius: 1vh;
@@ -172,9 +201,11 @@ export default {
 
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
 
 }
-.total:hover{
+.total:hover,
+.total-active{
     background-color: #535456;
 }
 

@@ -1,5 +1,6 @@
 <template>
   <div style="display: flex; margin-top: 0vh">
+    <!-- 左侧 ：当前分类 -->
     <div v-bind:class="{ info_index: true, outter: outter }">
       <div style="">
         <div style="

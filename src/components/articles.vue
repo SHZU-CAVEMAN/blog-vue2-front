@@ -16,7 +16,7 @@
       />
     </div>
     <!-- 底部信息栏 -->
-    <Footer />
+    <Footer class="footer"/>
   </div>
 </template>
 
@@ -83,5 +83,8 @@ export default {
 .pagination {
   display: flex;
   justify-content: center;
+}
+.footer{
+  margin-top: 5vh;
 }
 </style>

@@ -4,6 +4,7 @@ import router from './router'
 import store from './store';
 import VueLazyload from 'vue-lazyload';//图片懒加载
 import { Icon, BackTop, Pagination, Dropdown, Menu } from 'ant-design-vue';
+import './assets/css/typography.css'; // 全局引入排版样式，保持文章内容的基本格式美观。
 import CommonComponents from './components/common';
 import { initErrorMonitor } from './tools/errorMonitor';
 import request, { SERVICE_ORIGIN } from './tools/request';

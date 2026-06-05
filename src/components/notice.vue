@@ -1,8 +1,8 @@
 <template>
   <div class="notice">
-      <div style="background-color:#fafafa;display:flex;align-items: center;">
-        <a-icon type="sound" style="font-size: 3vh;" />
-        <h6 style="color: dimgray;margin:5px 0 5px 2vh;display:inline-block">
+      <div class="notice-head">
+        <a-icon type="sound" class="panel-icon" />
+        <h6 class="panel-title">
           公告
         </h6>
       </div>
@@ -10,7 +10,7 @@
       <hr style="margin-top: 0;" />
 
       <div class="content">
-        <h6 style="color: dimgray">欢迎来自<a :href="'https://www.baidu.com/s?tn=88093251_77_hao_pg&ie=utf-8&ssl_sample=normal&srcqid=7967440894375959861&H123Tmp=nunew7&word='+address" target="_blank" style="font-weight:550"> {{ address }} </a>的网友来访</h6>
+        <h6 class="notice-text">欢迎来自<a :href="'https://www.baidu.com/s?tn=88093251_77_hao_pg&ie=utf-8&ssl_sample=normal&srcqid=7967440894375959861&H123Tmp=nunew7&word='+address" target="_blank" class="notice-link"> {{ address }} </a>的网友来访</h6>
       </div>
   </div>
 </template>
@@ -90,8 +90,35 @@ export default {
   border: 1px solid rgb(208, 215, 222);
 }
 
+.notice-head {
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+}
+
+.panel-icon {
+  font-size: var(--font-size-xl);
+}
+
+.panel-title {
+  margin: 5px 0 5px 2vh;
+  display: inline-block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+  color: dimgray;
+}
+
 .content {
   margin-top: 5px;
   margin-left: 2%;
+}
+
+.notice-text {
+  color: dimgray;
+  font-size: var(--font-size-md);
+}
+
+.notice-link {
+  font-weight: var(--font-weight-medium);
 }
 </style>

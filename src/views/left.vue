@@ -54,7 +54,8 @@ export default {
 
 .left {
     background-color: #ffffff;
-    /* height: 90vh; */
+    height: calc(100vh - 10vh);
+    box-sizing: border-box;
     bottom: 0;
     border: 1px solid rgb(208, 215, 222);
     position: sticky;
@@ -68,6 +69,7 @@ export default {
 .outter {
     position: sticky;
     top: 0;
+    height: 100vh;
 }
 
 #category:hover {

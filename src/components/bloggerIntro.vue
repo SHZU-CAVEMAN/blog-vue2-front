@@ -25,15 +25,15 @@
       </picture>
 
       <br />
-      <h5 style="color: dimgray">Liao</h5>
-      <h8 style="color: dimgrey; background-color: #f4f5f7; font-size: 15px">业无高卑志当坚</h8>
+      <h5 class="name">Liao</h5>
+      <div class="motto">业无高卑志当坚</div>
     </div>
 
     <hr style="margin-left: 5%; margin-bottom: 0; width: 90%" />
 
     <div class="icon">
       <a href="https://github.com/SHZU-CAVEMAN" title="github" target="_blank" style="color: dimgrey">
-        <a-icon type="github" style="font-size: 25px" />
+        <a-icon type="github" class="social-icon" />
       </a>
 
       <a id="bilibili" href="https://space.bilibili.com/481007576" title="bilibili" target="_blank">
@@ -115,6 +115,27 @@ export default {
   /* background-color: white; */
 
   text-align: center;
+}
+
+.name {
+  color: dimgray;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-medium);
+}
+
+.motto {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  color: dimgrey;
+  background-color: #f4f5f7;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  border-radius: 999px;
+}
+
+.social-icon {
+  font-size: var(--font-size-xl);
 }
 
 .selfDefineIcon {

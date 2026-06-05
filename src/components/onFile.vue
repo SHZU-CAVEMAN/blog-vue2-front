@@ -4,17 +4,17 @@
 <template>
   <div class="onFile">
     <div id="articleListCate">
-      <div style="background-color: #ffffff; margin: 15px 2% 0 2%; font-size: 1.1rem;font-weight: 500;">
-        <div style="background-color: rgb(248, 248, 248); display: inline-block">
+      <div class="category-summary">
+        <div class="category-summary-label">
           分类：
         </div>
         {{ cateName }}
       </div>
 
-      <div style="background-color: #ffffff; margin: 15px 2% 20px 2%">
-        <div style="background-color: rgb(255, 255, 255);text-align: center; font-size: 1.1rem;color: rgb(83, 83, 83);">存档
+      <div class="archive-panel">
+        <div class="archive-title">存档
         </div>
-        <hr style="margin-top: 5px; margin-bottom: 15px" />
+        <hr class="archive-divider" />
         <div v-for="item in cateArticle" :key="item.id" @click="jump(item.id, item.title)">
           <div id="cateItem" style="">
             {{ item.publish_time }} >>
@@ -25,7 +25,7 @@
 
     </div>
 
-    <Footer style="margin-bottom: 5vh;" />
+    <Footer style="margin-top: 5vh;" />
 
   </div>
 </template>
@@ -149,6 +149,35 @@ export default {
   /* max-height: 1400px; */
   /* box-shadow: 0px 4px 6px 2px rgb(223, 223, 223); */
   border: 1px solid rgb(208, 215, 222);
+}
+
+.category-summary {
+  background-color: #ffffff;
+  margin: 15px 2% 0 2%;
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.category-summary-label {
+  background-color: rgb(248, 248, 248);
+  display: inline-block;
+}
+
+.archive-panel {
+  background-color: #ffffff;
+  margin: 15px 2% 20px 2%;
+}
+
+.archive-title {
+  background-color: #ffffff;
+  text-align: center;
+  font-size: 1.1rem;
+  color: rgb(83, 83, 83);
+}
+
+.archive-divider {
+  margin-top: 5px;
+  margin-bottom: 15px;
 }
 
 #cateItem {
