@@ -59,12 +59,12 @@ const routes = [
         },
         component: () => import('../components/articleView.vue')
     },
-    /*
     {
         path:'/friends',
         name:'friendsComponent',
         component:()=>import('../components/friends.vue')
     },
+    /*
     {
         path:'/statistics',
         name:'statisticsComponent',
