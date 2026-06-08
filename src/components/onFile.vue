@@ -186,21 +186,20 @@ export default {
   margin-top: 1vh;
   font-size: 1rem;
   padding:0 2vh;
+  color: var(--interactive-text-rest);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+#cateItem a {
+  color: inherit;
+  text-decoration: none;
 }
 
 #cateItem:hover {
-  /* background-color: rgb(255, 255, 255); */
-  background-color: #eff8ff;
-  color: rgb(0, 0, 0);
-
-  /* background-color: rgb(90, 90, 90);
-  color:rgb(250, 250, 250); */
+  background-color: #f3f4f6;
+  color: var(--interactive-text-active);
   font-weight: 550;
 }
 
-/* 
-#cateItem:hover a {
-  color: #1890ff;
-  font-weight: 550;
-} */
 </style>

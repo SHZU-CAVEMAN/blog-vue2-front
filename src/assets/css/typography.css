@@ -13,6 +13,8 @@
 
   --text-color-primary: #2f3437;
   --text-color-secondary: #5c6773;
+  --interactive-text-rest: #57606a;
+  --interactive-text-active: #24292f;
 }
 
 html {

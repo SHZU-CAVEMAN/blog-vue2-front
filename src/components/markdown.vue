@@ -456,7 +456,7 @@ export default {
             block: "center",
             inline: "start",
           });
-          dom.style.color = "#1890ff";
+          dom.style.color = "#24292f";
           // dom.style.color = "black";
           dom.style.fontWeight = "600";
           // sider.style.transform = `translateY(${index * 5}vh)`;
@@ -583,7 +583,13 @@ export default {
 }
 
 /* 上一篇下一篇样式 */
+h1 a {
+  color: var(--interactive-text-rest);
+  text-decoration: none;
+}
+
 h1:hover a {
+  color: var(--interactive-text-active);
   font-weight: 550;
 }
 
@@ -629,16 +635,17 @@ h1:hover a {
   font-size: 0.9rem;
   border-radius: 1vh;
   padding: 0 1vh;
+  color: var(--interactive-text-rest);
 }
 
 .item_current:hover {
-  color: black;
+  color: var(--interactive-text-active);
   font-weight: 550;
   border: 1px solid rgb(178, 178, 178);
 }
 
 .item_current_add {
-  color: black;
+  color: var(--interactive-text-active);
   font-weight: 550;
   border: 1px solid rgb(178, 178, 178);
 }

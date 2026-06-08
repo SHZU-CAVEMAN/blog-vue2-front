@@ -100,8 +100,15 @@ export default {
 }
 
 
+h5 {
+  color: var(--interactive-text-rest);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+
 h5:hover {
-  color: rgb(45, 150, 189)
+  color: var(--interactive-text-active);
 }
 
 .content {
@@ -194,25 +201,12 @@ h5:hover {
 #top #titlename {
   font-size: 3.5vh;
   color: dimgray;
-  /* color:#0d6efd; */
 }
 
 #top:hover #titlename {
-  /* color: #000000; */
-  /* color: #1890ff; */
-
-  /* 字体变大 */
-  /* font-size:25px; */
-
-  /* 字体加粗 */
   font-weight: 520;
   color: black;
-  /* text-decoration: underline; */
-
-  /* 给字体加下划线 */
-  /* text-decoration: null; */
 }
-
 
 #category {
   color: dimgray;
@@ -220,14 +214,11 @@ h5:hover {
   background-color: #F6F8FA;
   padding: 0.8vh 2vh;
   border: 1px solid rgb(208, 215, 222);
-
   border-radius: 1vh;
 }
 
 #category:hover {
-  /* color: #1890ff; */
   background-color: #F3F4F6;
-  /* text-decoration: underline; */
   font-weight: 510;
 }
 
@@ -243,7 +234,7 @@ h5:hover {
 
 .fenlei:hover {
   font-weight: 550;
-  color: rgb(45, 150, 189);
+  color: var(--interactive-text-active);
 }
 
 .imageLoad>>>img {

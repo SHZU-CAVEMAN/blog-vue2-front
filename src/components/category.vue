@@ -169,6 +169,7 @@ export default {
     margin-left: 5%;
     padding: 0 2vh;
     font-size: var(--font-size-md);
+    color: var(--interactive-text-rest);
     display: flex;
     justify-content: space-between;
     cursor: pointer;
@@ -177,9 +178,8 @@ export default {
 
 .category-item:hover,
 .category-item-active {
-    /* background-color:lightgray; */
-    background-color: #EFF8FF;
-    color: rgb(0, 0, 0);
+    background-color: #f3f4f6;
+    color: var(--interactive-text-active);
     font-weight: 550;
 }
 

@@ -68,7 +68,6 @@ export default {
                     const line = item[0].target.getAttribute("data-v-md-line");
                     this.removeClass(line);
                     const dom = document.getElementById(line);
-                    // dom.style.color = "#1890ff";
                     dom.style.color = "black";
                     dom.style.fontWeight = '550';
                     const index = this.indexArray.indexOf(line);
@@ -180,8 +179,7 @@ export default {
 }
 
 #catalog:hover #font {
-    /* color:black; */
-    color: #1890ff;
+    color: var(--interactive-text-active);
     font-weight: 550;
 }
 
