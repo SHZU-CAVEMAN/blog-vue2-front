@@ -71,7 +71,10 @@
 export default {
   name: "bloggerIntroComponent",
   data() {
-    return {};
+    return {
+      // 头像失败降级阶段：0=默认压缩图，1=原图兜底，2=本地静态图兜底。
+      avatarFallbackStage: 0,
+    };
   },
   computed: {
     // 原图兜底地址：当现代格式或压缩图不存在时回退。
@@ -88,11 +91,30 @@ export default {
     pictureAvifUrl() {
       return this.$uploadFilesBase + "zhishui.avif";
     },
+    // 本地静态头像兜底：当线上资源无法访问时，避免一直重试导致闪烁。
+    localAvatarFallbackUrl() {
+      return require("../assets/caveman.jpg");
+    },
   },
   methods: {
     handleAvatarError(event) {
-      // 若压缩版缺失或加载失败，自动回退到原图，避免头像空白。
-      event.target.src = this.pictureOriginUrl;
+      const img = event.target;
+
+      // 第一次失败：压缩图/现代格式失败后回退原图。
+      if (this.avatarFallbackStage === 0) {
+        this.avatarFallbackStage = 1;
+        img.src = this.pictureOriginUrl;
+        return;
+      }
+
+      // 第二次失败：原图也失败则回退本地静态图，彻底止损。
+      if (this.avatarFallbackStage === 1) {
+        this.avatarFallbackStage = 2;
+        img.src = this.localAvatarFallbackUrl;
+        return;
+      }
+
+      // 已进入最终兜底，不再继续切换地址，避免出现循环闪烁。
     },
   },
 };
