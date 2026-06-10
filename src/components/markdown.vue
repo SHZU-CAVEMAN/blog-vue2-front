@@ -119,6 +119,7 @@ export default {
       articlesCurrent: [],
       item_current_add: false,
       scroll: false,
+      articleListLoading: null,
     };
   },
   watch: {
@@ -213,10 +214,69 @@ export default {
         }, 0);
       });
     },
+    // 详情页刷新时确保文章列表可用：用于左侧同分类和上下篇计算。
+    ensureArticleListReady() {
+      const existing = this.$store.state.articleInfo.article || [];
+      if (Array.isArray(existing) && existing.length) {
+        return Promise.resolve(existing);
+      }
+
+      if (this.articleListLoading) {
+        return this.articleListLoading;
+      }
+
+      this.articleListLoading = this.$api.article.getAll()
+        .then((res) => {
+          const list = ((res && res.data && res.data.data) || []).slice().reverse();
+          this.$store.dispatch("setArticle", list);
+          return list;
+        })
+        .catch((error) => {
+          this.$reportError("article-list-fetch-failed", error, {
+            module: "markdown",
+            articleId: this.id,
+            articleName: this.name,
+          });
+          return [];
+        })
+        .finally(() => {
+          this.articleListLoading = null;
+        });
+
+      return this.articleListLoading;
+    },
+    // 统一基于文章列表计算“同分类 + 上下篇”。
+    syncRelatedArticles(articles) {
+      const list = Array.isArray(articles) ? articles : [];
+      this.getArticlesCurrent(this.name, list);
+
+      for (let i = 0; i < list.length; i++) {
+        if (this.getArticleName(list[i]) == this.name) {
+          this.publish_time =
+            list[i].publish_time || list[i].publishTime || this.publish_time;
+          this.category_name = this.getCategoryName(list[i]) || this.category_name;
+          if (i != 0 && i != list.length - 1) {
+            this.former = this.getArticleName(list[i - 1]);
+            this.later = this.getArticleName(list[i + 1]);
+            this.formerId = list[i - 1].id || list[i - 1]._id;
+            this.laterId = list[i + 1].id || list[i + 1]._id;
+          }
+          if (i == 0) {
+            this.former = "温馨提示：目前是第一篇";
+            this.later = this.getArticleName(list[i + 1]);
+            this.laterId = (list[i + 1] && (list[i + 1].id || list[i + 1]._id)) || "";
+          }
+          if (i == list.length - 1) {
+            this.former = this.getArticleName(list[i - 1]);
+            this.later = "温馨提示：目前是最后一篇";
+            this.formerId = (list[i - 1] && (list[i - 1].id || list[i - 1]._id)) || "";
+          }
+          break;
+        }
+      }
+    },
     // 统一刷新文章详情、目录和上下篇数据，避免把初始化逻辑散落在生命周期里。
     refreshArticle() {
-      this.getArticlesCurrent(this.name);
-
       // 每次刷新前清空状态，避免 keep-alive 或参数切换导致旧数据残留。
       this.titles = [];
       this.target = [];
@@ -225,6 +285,11 @@ export default {
       this.later = "";
       this.formerId = "";
       this.laterId = "";
+
+      // 刷新时优先保障文章列表可用，避免刷新详情页后同分类/上下篇为空。
+      this.ensureArticleListReady().then((articles) => {
+        this.syncRelatedArticles(articles);
+      });
 
       // 文章详情改为从后端接口 /articles/:id 获取
       const articleId = encodeURIComponent(this.id);
@@ -258,32 +323,6 @@ export default {
             requestUrl: url,
           });
         });
-
-      // 上下篇信息统一基于 Vuex 文章列表计算，避免列表重复存储。
-      const articles = this.$store.state.articleInfo.article || [];
-      for (let i = 0; i < articles.length; i++) {
-        if (this.getArticleName(articles[i]) == this.name) {
-          this.publish_time =
-            articles[i].publish_time || articles[i].publishTime || this.publish_time;
-          this.category_name = this.getCategoryName(articles[i]) || this.category_name;
-          if (i != 0 && i != articles.length - 1) {
-            this.former = this.getArticleName(articles[i - 1]);
-            this.later = this.getArticleName(articles[i + 1]);
-            this.formerId = articles[i - 1].id || articles[i - 1]._id;
-            this.laterId = articles[i + 1].id || articles[i + 1]._id;
-          }
-          if (i == 0) {
-            this.former = "温馨提示：目前是第一篇";
-            this.later = this.getArticleName(articles[i + 1]);
-            this.laterId = (articles[i + 1] && (articles[i + 1].id || articles[i + 1]._id)) || "";
-          }
-          if (i == articles.length - 1) {
-            this.former = this.getArticleName(articles[i - 1]);
-            this.later = "温馨提示：目前是最后一篇";
-            this.formerId = (articles[i - 1] && (articles[i - 1].id || articles[i - 1]._id)) || "";
-          }
-        }
-      }
     },
     buildCatalog() {
       if (!this.$refs.preview || !this.$refs.preview.$el) {
@@ -367,8 +406,8 @@ export default {
       });
     },
     // 获取当前同分类文章列表
-    getArticlesCurrent(name) {
-      const articles = this.$store.state.articleInfo.article || [];
+    getArticlesCurrent(name, articleList) {
+      const articles = Array.isArray(articleList) ? articleList : (this.$store.state.articleInfo.article || []);
       this.articlesCurrent = [];
 
       const current = articles.find(
