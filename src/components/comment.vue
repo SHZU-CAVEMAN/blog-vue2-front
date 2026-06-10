@@ -8,7 +8,7 @@
         <hr style="margin:5vh 0 2vh 0" />
 
         <!-- 评论展示列表 （v-for） -->
-        <div v-for="Acomment in commentListByProps" :key="Acomment.id" style="background-color: #ffffff">
+        <div v-for="Acomment in commentListByProps" :key="Acomment.id" class="comment-row">
             <!-- 一级评论 -->
             <!-- 如果toWhich无值，则-->
             <div v-if="!Acomment.toWhich" class="comment_item">
@@ -19,7 +19,7 @@
                         {{ Acomment.nickname }}
                     </div>
 
-                    <v-md-editor v-model="Acomment.comment" mode="preview"  style="font-size: 14px;margin-top: 1vh;background-color:#EFF2F5 ;border:0;height: auto;"/>
+                    <v-md-editor v-model="Acomment.comment" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;border:0;height: auto;"/>
 
                     <div style="display: flex; align-items: center">
                         {{ Acomment.time }}
@@ -54,7 +54,7 @@
                             </div>
                         </div>
 
-                        <v-md-editor v-model="Bcomment.comment" mode="preview"  style="font-size: 14px;margin-top: 1vh;height:auto;border:0;background-color:#EFF2F5  ;"/>
+                        <v-md-editor v-model="Bcomment.comment" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;height:auto;border:0;"/>
 
 
                         <div style="display: flex; align-items: center">
@@ -191,19 +191,19 @@ export default {
 
 <style scoped>
 .comment {
-    background-color: #ffffff;
+    background-color: var(--color-bg-surface);
     width: 60%;
     min-height: 30vh;
     margin-left: 20%;
     margin-top: 5vh;
-    border: 1px solid rgb(184, 184, 184);
+    border: 1px solid var(--color-border-primary);
     padding: 3vh;
     border-radius: 1vh;
 }
 
 .comment_item {
     margin-top: 1%;
-    background-color: #EFF2F5;
+    background-color: var(--color-bg-muted);
     /* background-color: #5e6267; */
     padding: 1% 1%;
 
@@ -225,7 +225,7 @@ img {
 }
 .content_name{
     font-size: 1rem;
-    color: rgb(0, 0, 0);
+    color: var(--text-color-primary);
     /* font-weight: 540; */
 }
 .isCommentEdit {
@@ -239,17 +239,27 @@ img {
 }
 
 .replyTo:hover {
-    color: #40A9FF;
+    color: var(--interactive-text-active);
     /* font-weight: 550; */
 }
 .ip{
     margin-left: 3vh;
-    color:dimgray
+    color:var(--interactive-text-rest)
 }
 .ip:hover{
-    color: #40A9FF;
+    color: var(--interactive-text-active);
 
     /* font-weight: 550; */
 
+}
+
+.comment-row {
+    /* 每一层评论行独立承载主题背景，避免父容器与子容器混色。 */
+    background-color: var(--color-bg-surface);
+}
+
+.comment-preview {
+    /* 覆盖 v-md-editor 预览区默认浅色背景，让评论正文跟随主题。 */
+    background-color: var(--color-bg-muted) !important;
 }
 </style>

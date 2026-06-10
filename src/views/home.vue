@@ -98,6 +98,10 @@ export default {
 </script>
 
 <style>
+#home {
+  background-color: var(--color-bg-page);
+}
+
 .home-layout {
   display: flex;
   align-items: flex-start;

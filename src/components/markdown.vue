@@ -41,33 +41,13 @@
    
       <hr v-if="publish_time" />
       <!-- 尾部 ：上一篇/下一篇-->
-      <div v-if="publish_time" style="
-          display: flex;
-          flex-direction: column;
-          height: 20vh;
-          padding: 3vh;
-        ">
-        <h1 style="
-            display: flex;
-            align-items: center;
-            font-size: 16px;
-            background-color: #f6f8fa;
-            padding: 1vh;
-            border: 1px solid rgb(184, 184, 184);
-          " @click="jumpFormer(formerId, former)">
+      <div v-if="publish_time" class="prev-next-wrap">
+        <h1 class="prev-next-item" @click="jumpFormer(formerId, former)">
           上一篇
           <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
           <a>{{ former }}</a>
         </h1>
-        <h1 style="
-            display: flex;
-            align-items: center;
-            margin-top: 0vh;
-            font-size: 16px;
-            background-color: #f6f8fa;
-            padding: 1vh;
-            border: 1px solid rgb(184, 184, 184);
-          " @click="jumpLater(laterId, later)">
+        <h1 class="prev-next-item" @click="jumpLater(laterId, later)">
           下一篇
           <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
           <a>{{ later }}</a>
@@ -77,19 +57,12 @@
 
     <!-- 文章目录 -->
     <div :class="{ catalog: true, outter: outter }">
-      <div class="el-icon-tickets" style="
-          font-size: 2.8vh;
-          margin-top: 1vh;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: dimgray;
-        ">
+      <div class="el-icon-tickets catalog-head">
         <a-icon type="container" />
         <a style="margin-bottom: 2px; margin-left: 2vh"> 目录</a>
       </div>
       <hr style="margin-top: 5px; margin-bottom: 0" />
-      <div style="background-color:white; padding: 2vh;">
+      <div class="catalog-body">
         <!-- 滚动条加在这里 -->
         <div v-if="titles.length" ref="catalog_scroll" class="catalog_content">
           <div :id="anchor.lineIndex" v-for="anchor in titles" :style="{
@@ -97,17 +70,12 @@
             marginLeft: '0vh',
             marginRight: '0vh',
           }" @click="handleAnchorClick(anchor)" :key="anchor">
-            <a id="font" style="
-                cursor: pointer;
-                height: 4vh;
-                font-size: 0.9rem;
-                background-color: 
-              ">
+            <a id="font" class="catalog-link">
               {{ anchor.title }}</a>
             <!-- <hr style="margin:0" /> -->
           </div>
         </div>
-        <div v-else style="color: dimgray; font-size: 0.9rem; text-align: center; padding: 2vh 0;">
+        <div v-else class="catalog-empty">
           暂无目录
         </div>
 
@@ -174,6 +142,11 @@ export default {
   },
 
   methods: {
+    // 读取当前主题变量：用于 JS 动态高亮目录时和 CSS 主题保持一致。
+    readThemeVar(name, fallback) {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return value || fallback;
+    },
     getArticleCacheKey(id) {
       return `${ARTICLE_DETAIL_CACHE_PREFIX}${id || ""}`;
     },
@@ -431,7 +404,8 @@ export default {
         if (domline != line) {
           const dom = document.getElementById(domline);
           if (!dom) continue;
-          dom.style.color = "dimgray";
+          // 非激活目录项恢复为“交互常态色”（灰色），避免写死颜色导致主题不一致。
+          dom.style.color = this.readThemeVar("--interactive-text-rest", "dimgray");
           dom.style.fontWeight = "500";
         }
       }
@@ -456,7 +430,8 @@ export default {
             block: "center",
             inline: "start",
           });
-          dom.style.color = "#24292f";
+          // 当前目录项使用“交互激活色”，跟随 light/dark 主题联动。
+          dom.style.color = this.readThemeVar("--interactive-text-active", "#24292f");
           // dom.style.color = "black";
           dom.style.fontWeight = "600";
           // sider.style.transform = `translateY(${index * 5}vh)`;
@@ -521,34 +496,36 @@ export default {
 }
 
 .info_index {
+  /* 左侧“当前分类”浮层：随滚动切换 fixed，并保持独立滚动区域。 */
   width: 18%;
   margin-left: 0%;
   display: flex;
   flex-direction: column;
   position: absolute;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 
   padding: 3vh;
 
   top: 10vh;
   bottom: 0;
-  background-color: white;
+  background-color: var(--color-bg-surface);
   overflow-y: scroll;
 }
 
 .outter {
+  /* 滚动超过阈值后吸顶，避免侧栏离开可视区。 */
   position: fixed;
   top: 0;
 }
 
 .info {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   width: 100%;
   /* height: 30vh; */
   padding: 2vh;
   font-size: 0.9rem;
   border-radius: 1vh;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 .info:hover {
@@ -556,14 +533,14 @@ export default {
 }
 
 .index {
-  background-color: white;
+  background-color: var(--color-bg-surface);
   width: 100%;
   /* height: 30vh; */
   margin-top: 3vh;
   padding: 2vh;
   font-size: 0.9rem;
   border-radius: 1vh;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 .index:hover {
@@ -572,14 +549,14 @@ export default {
 
 /* 文章主体样式 */
 .body {
-  background-color: rgb(255, 255, 255);
+  background-color: var(--color-bg-surface);
   /* background-color: #EFF2F5; */
   width: 60%;
   margin-left: 20%;
   margin-top: 2vh;
   color: black;
   border-radius: 1vh;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 /* 上一篇下一篇样式 */
@@ -594,12 +571,13 @@ h1:hover a {
 }
 
 .catalog {
+  /* 右侧目录容器：固定在页面右侧，和正文保持视觉分离。 */
   /* overflow: auto; */
   position: fixed;
   right: 1%;
   margin-left: 0;
   margin-top: 2vh;
-  background-color: #eff2f5;
+  background-color: var(--color-bg-muted);
   /* background-color: #ffffff; */
   overflow: hidden;
   width: 18%;
@@ -607,10 +585,11 @@ h1:hover a {
   /* max-height: 50vh; */
   /* overflow-y: scroll; */
   border-radius: 2vh;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 .catalog_content {
+  /* 目录内容区单独滚动，防止长目录把整块容器撑高。 */
   /* background-color: #e7f3ff; */
   /* background-color: #ffffff; */
   overflow-y: scroll;
@@ -630,6 +609,7 @@ h1:hover a {
 
 /* 左侧当前分类样式 */
 .item_current {
+  /* 当前分类里的文章条目：常态使用低对比背景与中性文字。 */
   background-color: #eff2f5;
   margin-top: 1vh;
   font-size: 0.9rem;
@@ -641,13 +621,14 @@ h1:hover a {
 .item_current:hover {
   color: var(--interactive-text-active);
   font-weight: 550;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 .item_current_add {
+  /* 命中当前文章时的高亮态，和 hover 视觉保持一致。 */
   color: var(--interactive-text-active);
   font-weight: 550;
-  border: 1px solid rgb(178, 178, 178);
+  border: 1px solid var(--color-border-primary);
 }
 
 /* 文章标题样式 */
@@ -655,22 +636,75 @@ h1:hover a {
   margin-top: 3vh;
   font-weight: 550;
   font-size: 1.3rem;
-  color: black;
+  color: var(--text-color-primary);
   text-align: center;
 }
 
 .meta-line {
+  /* 标题下方元信息（发布时间/分类）统一右对齐展示。 */
   margin-top: 0.5vh;
   display: flex;
   justify-content: flex-end;
   gap: 1.5vh;
-  color: dimgray;
+  color: var(--text-color-secondary);
   font-size: 0.85rem;
   padding: 0 clamp(12px, 2vw, 24px);
 }
 
 .meta-item {
   white-space: nowrap;
+}
+
+.prev-next-wrap {
+  /* 上一篇/下一篇容器：统一改为主题变量驱动，避免内联样式硬编码颜色。 */
+  display: flex;
+  flex-direction: column;
+  height: 20vh;
+  padding: 3vh;
+}
+
+.prev-next-item {
+  /* 上下篇卡片条目：统一边框与背景，兼容 light/dark 主题。 */
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  font-size: 16px;
+  background-color: var(--color-bg-muted);
+  color: var(--text-color-primary);
+  padding: 1vh;
+  border: 1px solid var(--color-border-primary);
+}
+
+.catalog-head {
+  /* 目录标题色使用次级文字变量，夜间模式可自动降亮度。 */
+  font-size: 2.8vh;
+  margin-top: 1vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-color-secondary);
+}
+
+.catalog-body {
+  /* 目录主体内层：提供稳定留白，避免标题贴边。 */
+  background-color: var(--color-bg-surface);
+  padding: 2vh;
+}
+
+.catalog-link {
+  /* 目录条目默认使用可点击文字常态色，激活态在 JS 中动态覆盖。 */
+  cursor: pointer;
+  height: 4vh;
+  font-size: 0.9rem;
+  color: var(--interactive-text-rest);
+}
+
+.catalog-empty {
+  /* 无目录时的占位文案，弱化显示避免喧宾夺主。 */
+  color: var(--text-color-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2vh 0;
 }
 
 .sider {

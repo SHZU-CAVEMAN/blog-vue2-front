@@ -9,6 +9,7 @@ import CommonComponents from './components/common';
 import { initErrorMonitor } from './tools/errorMonitor';
 import request, { SERVICE_ORIGIN } from './tools/request';
 import api from './api';
+import { initializeTheme } from './tools/theme';
 
 let markdownRuntimeReady = false;
 let markdownRuntimeLoading = null;
@@ -71,6 +72,7 @@ function ensureMarkdownRuntime() {
 
 
 Vue.config.productionTip = false;//关闭生产者提示
+initializeTheme();
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
 Vue.prototype.$uploadFilesBase = `${SERVICE_ORIGIN}/uploadFiles/`;

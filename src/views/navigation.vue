@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import { applyTheme } from "../tools/theme";
+
 export default {
    name: "navigationComponent",
    data() {
@@ -56,9 +58,15 @@ export default {
          });
       },
       toggleTheme() {
-         // 开关状态反转后，背景色和滑块位置会同步切换。
-         this.isNight = !this.isNight;
+         // 切换全局主题：同步更新 html[data-theme] 和本地存储。
+         const nextTheme = this.isNight ? "light" : "dark";
+         applyTheme(nextTheme);
+         this.isNight = nextTheme === "dark";
       }
+   },
+   mounted() {
+      // 首次渲染时根据全局主题恢复开关状态。
+      this.isNight = document.documentElement.getAttribute("data-theme") === "dark";
    }
 };
 </script>
@@ -70,8 +78,8 @@ export default {
    align-items: center;
    text-align: center;
    position: relative;
-   background-color: #f6f8fa;
-   border-bottom: 1px solid #d0d7de;
+   background-color: var(--color-bg-nav);
+   border-bottom: 1px solid var(--color-border-primary);
    height: 10vh;
    padding: 0 2%;
 }
@@ -80,7 +88,7 @@ export default {
 .brand-title {
    margin-left: 2vh;
    flex: 1;
-   color: #24292f;
+   color: var(--text-color-primary);
    font-family: var(--font-family-brand);
    font-size: var(--font-size-xl);
    font-weight: var(--font-weight-medium);
@@ -134,8 +142,8 @@ export default {
    width: 58px;
    height: 32px;
    border-radius: 999px;
-   border: 1px solid #d0d7de;
-   background: linear-gradient(90deg, #ffffff 0%, #f6f8fa 50%, #eef2f6 100%);
+   border: 1px solid var(--color-border-primary);
+   background: linear-gradient(90deg, var(--color-bg-surface) 0%, var(--color-bg-nav) 50%, #eef2f6 100%);
    display: inline-flex;
    align-items: center;
    justify-content: space-between;

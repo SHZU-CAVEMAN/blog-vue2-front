@@ -1,12 +1,7 @@
 <template>
     <div class="catalog">
         <!-- <a-icon type="container" /> -->
-        <div class="el-icon-tickets" style="
-          font-size: 3vh;
-          margin-top: 1vh;
-          text-align: center;
-          color: dimgray;
-        ">
+                <div class="catalog-title">
             目录
         </div>
 
@@ -47,12 +42,16 @@ export default {
 
     },
     methods: {
+        readThemeVar(name, fallback) {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            return value || fallback;
+        },
         //去除除了line所对应标题的字体样式（还原成dimgray）
         removeClass(line) {
             for (let i = 0; i < this.target.length; i++) {
                 const domline = this.target[i].getAttribute("data-v-md-line");
                 if (domline != line) {
-                    document.getElementById(domline).style.color = "dimgray";
+                    document.getElementById(domline).style.color = this.readThemeVar("--interactive-text-rest", "dimgray");
                     document.getElementById(domline).style.fontWeight = "500";
 
                 }
@@ -68,7 +67,7 @@ export default {
                     const line = item[0].target.getAttribute("data-v-md-line");
                     this.removeClass(line);
                     const dom = document.getElementById(line);
-                    dom.style.color = "black";
+                    dom.style.color = this.readThemeVar("--interactive-text-active", "black");
                     dom.style.fontWeight = '550';
                     const index = this.indexArray.indexOf(line);
                     var sider = document.querySelector(".siderbar");
@@ -161,7 +160,7 @@ export default {
     position: fixed;
     margin-left: 77%;
 
-    background-color: rgb(255, 255, 255);
+    background-color: var(--color-bg-surface);
     display: inline-block;
     vertical-align: top;
     width: 22%;
@@ -171,11 +170,11 @@ export default {
     overflow-y: scroll;
     padding: 1vh;
     border-radius: 2vh;
-    border: 1px solid rgb(178, 178, 178);
+    border: 1px solid var(--color-border-primary);
 }
 
 #catalog:hover {
-    background-color: #f6f8fa;
+    background-color: var(--color-bg-muted);
 }
 
 #catalog:hover #font {
@@ -190,7 +189,7 @@ export default {
 .sider {
     width: 2px;
     height: 100%;
-    background: #eee;
+    background: var(--color-border-primary);
     position: absolute;
     left: 0;
     top: 17vh;
@@ -204,7 +203,14 @@ export default {
     width: 100%;
     height: 4vh;
     line-height: 2;
-    background: black;
+    background: var(--interactive-text-active);
     transition: all 0.1s;
+}
+
+.catalog-title {
+    font-size: 3vh;
+    margin-top: 1vh;
+    text-align: center;
+    color: var(--text-color-secondary);
 }
 </style>

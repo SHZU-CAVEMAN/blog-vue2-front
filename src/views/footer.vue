@@ -22,11 +22,12 @@ export default {
 
 <style scoped>
 .footer {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
+  color: var(--text-color-primary);
   width: 96%;
   margin-left: 2%;
   margin-top: 0vh;
-  border:1px solid rgb(208, 215, 222);
+  border:1px solid var(--color-border-primary);
   border-radius: 10px;
 }
 </style>

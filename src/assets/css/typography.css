@@ -1,3 +1,4 @@
+/* 默认情况下，用:root的浅色主题 */
 :root {
   --font-family-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
   --font-family-brand: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
@@ -15,6 +16,26 @@
   --text-color-secondary: #5c6773;
   --interactive-text-rest: #57606a;
   --interactive-text-active: #24292f;
+
+  --color-bg-page: #eff2f5;
+  --color-bg-nav: #f6f8fa;
+  --color-bg-surface: #ffffff;
+  --color-bg-muted: #f3f4f6;
+  --color-border-primary: #d0d7de;
+}
+
+/* 暗色主题 */
+html[data-theme="dark"] {
+  --text-color-primary: #e6edf3;
+  --text-color-secondary: #9aa4b2;
+  --interactive-text-rest: #9aa4b2;
+  --interactive-text-active: #f0f6fc;
+
+  --color-bg-page: #0d1117;
+  --color-bg-nav: #161b22;
+  --color-bg-surface: #161b22;
+  --color-bg-muted: #1f2630;
+  --color-border-primary: #30363d;
 }
 
 html {
@@ -26,9 +47,57 @@ body {
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
   color: var(--text-color-primary);
+  background-color: var(--color-bg-page);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+/* 默认主题下的全站容器 */
+#app {
+  background-color: var(--color-bg-page);
+  color: var(--text-color-primary);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+/* 暗色主题下的全站容器兜底：覆盖大量历史硬编码白底组件。 */
+html[data-theme="dark"] .home,
+html[data-theme="dark"] .article,
+html[data-theme="dark"] .notice,
+html[data-theme="dark"] .bloggerIntro,
+html[data-theme="dark"] .friends-card,
+html[data-theme="dark"] #articleListCate,
+html[data-theme="dark"] .category,
+html[data-theme="dark"] .left,
+html[data-theme="dark"] .body,
+html[data-theme="dark"] .catalog,
+html[data-theme="dark"] .info_index,
+html[data-theme="dark"] .index,
+html[data-theme="dark"] .info,
+html[data-theme="dark"] .navigation {
+  background-color: var(--color-bg-surface) !important;
+  border-color: var(--color-border-primary) !important;
+  color: var(--text-color-primary) !important;
+}
+
+/* 暗色主题下的次级块背景。 */
+html[data-theme="dark"] .content,
+html[data-theme="dark"] .intro,
+html[data-theme="dark"] .category-item,
+html[data-theme="dark"] .total,
+html[data-theme="dark"] #cateItem,
+html[data-theme="dark"] .item_current,
+html[data-theme="dark"] .friend-item,
+html[data-theme="dark"] .notice-head,
+html[data-theme="dark"] .theme-toggle {
+  background-color: var(--color-bg-muted) !important;
+}
+/* 暗色主题下的分隔线 */
+html[data-theme="dark"] hr {
+  border-color: var(--color-border-primary);
 }
 
 button,

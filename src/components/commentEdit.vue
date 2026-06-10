@@ -160,15 +160,16 @@ export default {
 
 <style scoped>
 .editor {
+    /* 评论编辑器边框改为主题变量，暗色模式下不会出现突兀浅边框。 */
     height: 25vh;
     /* background-color: #EFF2F5; */
-    border: 1px solid rgb(178, 178, 178);
+    border: 1px solid var(--color-border-primary);
     /* 覆盖原有的阴影的样式 */
     box-shadow: 0vh 0vh 0vh rgb(143, 143, 143);
 }
 
 .userInfo_character {
-    color: dimgray;
+    color: var(--text-color-secondary);
     margin-bottom: 1px;
     font-size: 2.5vh
 }
@@ -176,14 +177,15 @@ export default {
 .userInfo_item {
     margin-bottom: 1vh;
     border-radius: 1vh;
-    border: 1px solid rgb(136, 136, 136);
+    border: 1px solid var(--color-border-primary);
 }
 
 .brief {
+    /* 提示块使用 muted/surface 两档背景，hover 时层次更清晰。 */
     width: 12vh;
     height: 5vh;
-    background-color: #f6f8fa;
-    border: 1px solid rgb(208, 215, 222);
+    background-color: var(--color-bg-muted);
+    border: 1px solid var(--color-border-primary);
     /* border-radius: 1vh; */
     margin-left: 70%;
     display: flex;
@@ -192,29 +194,30 @@ export default {
 }
 
 .brief:hover {
-    /* background-color: #F3F4F6; */
-    background-color: #ffffff;
-    color: white;
+    background-color: var(--color-bg-surface);
+    color: var(--interactive-text-active);
 }
 
 .button {
+    /* 评论操作按钮统一走主题变量，避免写死黑白导致夜间模式反差异常。 */
     /* width: 12vh; */
     height: 4vh;
-    background-color: #ffffff;
-    border: 1px solid rgb(196, 201, 206);
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-primary);
     border-radius: 1vh;
     /* margin-left: 5vh; */
     display: flex;
     align-items: center;
     padding: 2vh;
     /* box-shadow: 1px 1px 1px rgb(152, 152, 152); */
-    background-color: #f3f3f3;
-    color: rgb(0, 0, 0);
+    background-color: var(--color-bg-muted);
+    color: var(--text-color-primary);
 
 }
 
 .button:hover {
-    background-color: rgb(99, 99, 99);
-    color: white;
+    /* 悬浮态只提升文字对比和轻微背景变化，不使用高饱和色。 */
+    background-color: var(--color-bg-surface);
+    color: var(--interactive-text-active);
 }
 </style>

@@ -130,7 +130,7 @@ export default {
 
 <style scoped>
 .category {
-    background-color: #ffffff;
+    background-color: var(--color-bg-surface);
     width: 100%;
     height: auto;
     margin-left: 0%;
@@ -146,7 +146,7 @@ export default {
 }
 
 .category-head {
-    background-color: #ffffff;
+    background-color: var(--color-bg-surface);
     display: flex;
     align-items: center;
 }
@@ -160,11 +160,11 @@ export default {
     display: inline-block;
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-medium);
-    color: dimgray;
+    color: var(--text-color-secondary);
 }
 
 .category-item {
-    background-color: #EFF2F5;
+    background-color: var(--color-bg-muted);
     width: 90%;
     margin-left: 5%;
     padding: 0 2vh;
@@ -178,7 +178,7 @@ export default {
 
 .category-item:hover,
 .category-item-active {
-    background-color: #f3f4f6;
+    background-color: var(--color-bg-surface);
     color: var(--interactive-text-active);
     font-weight: 550;
 }
@@ -191,13 +191,13 @@ export default {
     padding:0 2vh;
     font-size: var(--font-size-md);
     /* background-color: #EFF2F5; */
-    background-color: #707070;
-    color:white;
+    background-color: var(--color-bg-muted);
+    color: var(--interactive-text-rest);
     font-weight: var(--font-weight-medium);
 
 
     border-radius: 1vh;
-    border: 1px solid rgb(178, 178, 178);
+    border: 1px solid var(--color-border-primary);
 
     display: flex;
     justify-content: space-between;
@@ -206,7 +206,8 @@ export default {
 }
 .total:hover,
 .total-active{
-    background-color: #535456;
+    background-color: var(--color-bg-surface);
+    color: var(--interactive-text-active);
 }
 
 </style>

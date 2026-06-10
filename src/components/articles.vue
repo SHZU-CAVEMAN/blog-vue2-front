@@ -74,7 +74,7 @@ export default {
 
 <style scoped>
 .articles {
-  background-color: #eff2f5;
+  background-color: var(--color-bg-page);
   width: 100%;
   margin-top: 2%;
   z-index: 2;  /* ? */

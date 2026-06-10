@@ -136,7 +136,7 @@ export default {
 
 #articleListCate {
   /* position: relative; */
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   display: inline-block;
   vertical-align: top;
   margin-left: 2%;
@@ -148,31 +148,31 @@ export default {
   /* 不设置高度，高度就自适应了 */
   /* max-height: 1400px; */
   /* box-shadow: 0px 4px 6px 2px rgb(223, 223, 223); */
-  border: 1px solid rgb(208, 215, 222);
+  border: 1px solid var(--color-border-primary);
 }
 
 .category-summary {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   margin: 15px 2% 0 2%;
   font-size: 1.1rem;
   font-weight: var(--font-weight-medium);
 }
 
 .category-summary-label {
-  background-color: rgb(248, 248, 248);
+  background-color: var(--color-bg-muted);
   display: inline-block;
 }
 
 .archive-panel {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   margin: 15px 2% 20px 2%;
 }
 
 .archive-title {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   text-align: center;
   font-size: 1.1rem;
-  color: rgb(83, 83, 83);
+  color: var(--text-color-secondary);
 }
 
 .archive-divider {
@@ -182,7 +182,7 @@ export default {
 
 #cateItem {
   /* background-color: #fafafa; */
-  background-color: #EFF2F5;
+  background-color: var(--color-bg-muted);
   margin-top: 1vh;
   font-size: 1rem;
   padding:0 2vh;
@@ -197,7 +197,7 @@ export default {
 }
 
 #cateItem:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-bg-surface);
   color: var(--interactive-text-active);
   font-weight: 550;
 }
