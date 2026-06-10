@@ -24,8 +24,8 @@
 
                     </div>
                 </div>
-
-                <div v-for="item in category" :key="item" style="margin-top: 0.5vh;">
+                
+                <div v-for="item in category" :key="item.name" style="margin-top: 0.5vh;">
                     <div :class="{ 'category-item-active': isCategoryActive(item.name) }" class="category-item" @click="jump(item.name)">
                         <div >
                             {{ item.name }}
