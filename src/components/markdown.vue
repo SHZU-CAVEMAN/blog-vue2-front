@@ -727,4 +727,132 @@ h1:hover a {
   background: rgb(166, 166, 166);
   transition: all 0.1s;
 }
+
+/*
+  Markdown 正文内部元素主题适配：
+  仅切容器底色不够，表格/代码块/引用块仍会沿用默认浅色方案，
+  在暗色模式下会出现发灰、发糊的问题。这里统一改为变量驱动。
+*/
+.body /deep/ .v-md-editor-preview,
+.body /deep/ .markdown-body {
+  color: var(--text-color-primary);
+}
+
+.body /deep/ .markdown-body a {
+  color: var(--interactive-text-rest);
+}
+
+.body /deep/ .markdown-body a:hover {
+  color: var(--interactive-text-active);
+}
+
+/* 表格在深浅主题下都使用统一边框和表头底色，提高可读性。 */
+.body /deep/ .markdown-body table,
+.body /deep/ .markdown-body th,
+.body /deep/ .markdown-body td {
+  border-color: var(--color-border-primary) !important;
+}
+
+/* 同步覆盖 v-md-preview 的表格节点，兼容 Markdown Extra 渲染结构。 */
+.body /deep/ .v-md-editor-preview table,
+.body /deep/ .v-md-editor-preview table th,
+.body /deep/ .v-md-editor-preview table td {
+  border-color: var(--color-border-primary) !important;
+}
+
+.body /deep/ .markdown-body table {
+  background-color: transparent !important;
+}
+
+/* Markdown Extra 生成的表格同样是 table/tr/td 结构，行级背景也要统一覆盖。 */
+.body /deep/ .markdown-body table tr {
+  background-color: var(--color-bg-surface) !important;
+  border-top-color: var(--color-border-primary) !important;
+}
+
+.body /deep/ .markdown-body table tr:nth-child(2n) {
+  background-color: var(--color-bg-muted) !important;
+}
+
+.body /deep/ .v-md-editor-preview table tr {
+  background-color: var(--color-bg-surface) !important;
+  border-top-color: var(--color-border-primary) !important;
+}
+
+.body /deep/ .v-md-editor-preview table tr:nth-child(2n) {
+  background-color: var(--color-bg-muted) !important;
+}
+
+.body /deep/ .markdown-body th {
+  background-color: var(--color-bg-muted) !important;
+  color: var(--text-color-primary);
+}
+
+.body /deep/ .markdown-body td {
+  background-color: var(--color-bg-surface) !important;
+  color: var(--text-color-primary);
+}
+
+/* 暗色模式下再做一层强覆盖，压过 github-markdown.css 里的浅色行背景。 */
+html[data-theme="dark"] .body /deep/ .markdown-body table tr,
+html[data-theme="dark"] .body /deep/ .markdown-body table td {
+  background-color: var(--color-bg-surface) !important;
+  color: var(--text-color-primary) !important;
+}
+
+html[data-theme="dark"] .body /deep/ .markdown-body table tr:nth-child(2n),
+html[data-theme="dark"] .body /deep/ .markdown-body table th {
+  background-color: var(--color-bg-muted) !important;
+}
+
+/* 暗色模式下对 v-md 预览表格进行更高对比覆盖，避免“发灰发糊”。 */
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table,
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table tr,
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table td,
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
+  color: #e6edf3 !important;
+  border-color: #3a4553 !important;
+  text-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table tr,
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table td {
+  background-color: #111821 !important;
+}
+
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table tr:nth-child(2n),
+html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
+  background-color: #182230 !important;
+}
+
+/* 代码块与行内代码在暗色主题下避免白底和低对比文字。 */
+.body /deep/ .markdown-body pre,
+.body /deep/ .v-md-editor-preview pre {
+  background-color: var(--color-bg-page) !important;
+  border: 1px solid var(--color-border-primary);
+}
+
+.body /deep/ .markdown-body pre code,
+.body /deep/ .v-md-editor-preview pre code {
+  color: var(--text-color-primary) !important;
+}
+
+.body /deep/ .markdown-body :not(pre) > code {
+  background-color: var(--color-bg-muted) !important;
+  border: 1px solid var(--color-border-primary);
+  color: var(--text-color-primary) !important;
+}
+
+/* 引用块与分隔线改成主题变量，避免暗色下边界模糊。 */
+.body /deep/ .markdown-body blockquote {
+  background-color: var(--color-bg-muted) !important;
+  border-left: 4px solid var(--color-border-primary) !important;
+  color: var(--text-color-secondary) !important;
+}
+
+.body /deep/ .markdown-body hr {
+  border-color: var(--color-border-primary) !important;
+}
 </style>
