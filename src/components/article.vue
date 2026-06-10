@@ -51,7 +51,8 @@ export default {
       return this.$uploadFilesBase + this.article.picture;
     },
     placeholder() {
-      return this.$uploadFilesBase + 'zipped_' + this.article.picture;
+      // 兼容后端未生成 zipped_ 压缩图的情况，避免 404。
+      return this.pictureUrl;
     }
   },
   props: ["article"],

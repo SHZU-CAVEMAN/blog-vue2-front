@@ -17,7 +17,7 @@ function isBelowViewport(el){
     return rect.top > window.innerHeight
 }
 export default{
-    mounted(el){
+    inserted(el){
         // 首屏元素不做入场动画，避免推迟 LCP；只对首屏以下元素执行动画。
         if (!isBelowViewport(el)){
             return 
@@ -45,7 +45,7 @@ export default{
         map.set(el,animation)
         ob.observe(el)
     },
-    unmounted(el){
+    unbind(el){
         ob.unobserve(el)
     }
 

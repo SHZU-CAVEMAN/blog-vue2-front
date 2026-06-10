@@ -6,6 +6,7 @@ import VueLazyload from 'vue-lazyload';//图片懒加载
 import { Icon, BackTop, Pagination, Dropdown, Menu } from 'ant-design-vue';
 import './assets/css/typography.css'; // 全局引入排版样式，保持文章内容的基本格式美观。
 import CommonComponents from './components/common';
+import vSlideIn from './tools/vSlideIn';
 import { initErrorMonitor } from './tools/errorMonitor';
 import request, { SERVICE_ORIGIN } from './tools/request';
 import api from './api';
@@ -83,6 +84,8 @@ Vue.use(Dropdown);
 Vue.use(Menu);
 Vue.use(VueLazyload);
 Vue.use(CommonComponents);
+// 全局注册滚动入场动画指令：模板中可直接使用 v-slide-in。
+Vue.directive('slide-in', vSlideIn);
 Vue.prototype.$getEcharts = () => import('echarts');
 
 // 初始化全局错误监控：统一采集 Vue/JS/Promise/Axios 错误。

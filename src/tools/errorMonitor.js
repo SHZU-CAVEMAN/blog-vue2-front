@@ -91,7 +91,7 @@ function createReporter({ appName, reportUrl }) {
     }
     //开发环境保留可读日志，生产环境交给监控平台。
     if (process.env.NODE_ENV !== "production") {
-      console.error("[ErrorMonitor]", payload);
+      //console.error("[ErrorMonitor]", payload);
     }
     sendToServer(reportUrl, payload);
   };
