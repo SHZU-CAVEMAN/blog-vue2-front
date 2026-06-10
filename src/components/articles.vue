@@ -7,12 +7,12 @@
     </div>
     <!-- 分页器 -->
     <div class="pagination">
-      <a-pagination
-        simple
-        :defaultPageSize="10"
-        :default-current="1"
-        :total="articleInfo.length + 1"
-        @change="onChange"
+      <common-pagination
+        :total="articleInfo.length"
+        :current.sync="page"
+        :page-size.sync="pageSize"
+        :page-size-options="pageSizeOptions"
+        @change="onPaginationChange"
       />
     </div>
     <!-- 底部信息栏 -->
@@ -39,22 +39,35 @@ export default {
   data() {
     return {
       temp: [], //存放最近的十篇文章
+      // 当前页码与每页条数由通用分页器双向驱动。
+      page: 1,
+      pageSize: 10,
+      // 分页器可选的“每页行数”配置。
+      pageSizeOptions: ["5", "10", "20", "30", "50"],
     };
   },
   watch: {
     // 列表变化后同步更新分页首屏数据。
     articleInfo: {
       handler() {
-        this.temp = this.articleInfo.slice(0, 10);
+        this.page = 1;
+        this.updatePageData();
       },
       immediate: true,
     },
   },
   methods: {
-    onChange(page) {
-      this.temp = this.articleInfo.slice((page - 1) * 10, page * 10);
-      //回到顶部
-      //scroll(0, 0);
+    // 基于当前 page/pageSize 计算当前页数据切片。
+    updatePageData() {
+      const start = (this.page - 1) * this.pageSize;
+      const end = this.page * this.pageSize;
+      this.temp = this.articleInfo.slice(start, end);
+    },
+    // 统一处理分页器变更（翻页、改每页条数）。
+    onPaginationChange({ page, pageSize }) {
+      this.page = page;
+      this.pageSize = pageSize;
+      this.updatePageData();
     },
   },
   created() {
