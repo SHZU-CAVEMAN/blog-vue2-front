@@ -65,6 +65,11 @@ export default {
     },
     // 统一处理分页器变更（翻页、改每页条数）。
     onPaginationChange({ page, pageSize }) {
+      // 先瞬时回顶，再渲染新页数据：保证 v-slide-in 判断时元素位于首屏以下，后续下拉仍能触发动画。
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
       this.page = page;
       this.pageSize = pageSize;
       this.updatePageData();
