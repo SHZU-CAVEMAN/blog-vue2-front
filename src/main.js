@@ -77,6 +77,8 @@ initializeTheme();
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
 Vue.prototype.$uploadFilesBase = `${SERVICE_ORIGIN}/uploadFiles/`;
+// 暴露 Markdown 运行时加载器，供详情页组件在渲染前主动等待。
+Vue.prototype.$ensureMarkdownRuntime = ensureMarkdownRuntime;
 Vue.use(Icon);
 Vue.use(BackTop);
 Vue.use(Pagination);
@@ -106,7 +108,8 @@ router.beforeEach((to, from, next) => {
     .then(() => next())
     .catch((error) => {
       console.error('Markdown runtime load failed:', error);
-      // 降级策略：即使加载失败也继续导航，避免整页白屏。
+      // 加载失败时先放行，避免导航重定向 Promise 被上层未捕获导致页面空白。
+      // 后续可根据需要增加更平滑的降级提示。
       next();
     });
 });
