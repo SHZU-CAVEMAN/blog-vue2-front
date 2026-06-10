@@ -71,6 +71,21 @@ function ensureMarkdownRuntime() {
   return markdownRuntimeLoading;
 }
 
+// 不阻塞首页渲染，提前把 Markdown 运行时加载到缓存里。
+function warmupMarkdownRuntime() {
+  const run = () => {
+    ensureMarkdownRuntime().catch((error) => {
+      console.warn('Markdown runtime warmup failed:', error);
+    });
+  };
+
+  if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(run, { timeout: 2000 });
+    return;
+  }
+
+  setTimeout(run, 800);
+}
 
 Vue.config.productionTip = false;//关闭生产者提示
 initializeTheme();
@@ -79,6 +94,8 @@ Vue.prototype.$api = api;
 Vue.prototype.$uploadFilesBase = `${SERVICE_ORIGIN}/uploadFiles/`;
 // 暴露 Markdown 运行时加载器，供详情页组件在渲染前主动等待。
 Vue.prototype.$ensureMarkdownRuntime = ensureMarkdownRuntime;
+// 暴露运行时就绪状态：详情页可据此跳过重复“加载中”闪烁。
+Vue.prototype.$isMarkdownRuntimeReady = () => markdownRuntimeReady;
 Vue.use(Icon);
 Vue.use(BackTop);
 Vue.use(Pagination);
@@ -124,6 +141,9 @@ new Vue({
 	},
 
 }).$mount('#app')
+
+// 首屏渲染后预热 Markdown 运行时，提升后续进入详情页的性能和用户体验。
+warmupMarkdownRuntime();
 
 
 

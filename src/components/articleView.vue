@@ -9,14 +9,6 @@
       <!-- 文章评论 ：name为文章名-->
       <comment :name="name"></comment>
     </template>
-
-    <div v-else-if="loadingError" class="runtime-tip">
-      Markdown 运行时加载失败，请刷新页面后重试。
-    </div>
-
-    <div v-else class="runtime-tip">
-      正在加载文章内容...
-    </div>
   </div>
 </template>
 
@@ -29,9 +21,11 @@ export default {
   // props 的 id 和 name 来自路由（见 router/index.js）。
   props: ["id", "name"],
   data() {
+    const isReady = typeof this.$isMarkdownRuntimeReady === "function" && this.$isMarkdownRuntimeReady();
     return {
-      markdownReady: false,
-      loadingError: false,
+      // 运行时已缓存时直接渲染，避免每次进入详情都短暂闪“加载中”。
+      markdownReady: !!isReady,
+      retryTimer: null,
     }
   },
   components: {
@@ -39,23 +33,42 @@ export default {
     Comment,
   },
   created() {
-    // 组件级兜底：确保 v-md-editor/v-md-preview 注册完成后再渲染详情与评论。
-    const ensure = this.$ensureMarkdownRuntime;
-    if (typeof ensure !== "function") {
-      this.loadingError = true;
+    // 已就绪直接返回：避免重复触发加载 Promise。
+    if (this.markdownReady) {
       return;
     }
 
-    ensure()
-      .then(() => {
-        this.markdownReady = true;
-        this.loadingError = false;
-      })
-      .catch((error) => {
-        console.error("Article markdown runtime load failed:", error);
-        this.loadingError = true;
-      });
-  }
+    this.tryLoadRuntime();
+  },
+
+  methods: {
+    // 组件级兜底：确保 v-md-editor/v-md-preview 注册完成后再渲染详情与评论。
+    tryLoadRuntime() {
+      const ensure = this.$ensureMarkdownRuntime;
+      if (typeof ensure !== "function") {
+        // 运行时加载器未挂载时，短暂等待后重试。
+        this.retryTimer = setTimeout(() => this.tryLoadRuntime(), 500);
+        return;
+      }
+
+      ensure()
+        .then(() => {
+          this.markdownReady = true;
+        })
+        .catch((error) => {
+          console.error("Article markdown runtime load failed:", error);
+          // 自动重试直到成功：用户只看到“加载中”，不会再出现失败提示。
+          this.retryTimer = setTimeout(() => this.tryLoadRuntime(), 300);
+        });
+    },
+  },
+
+  beforeDestroy() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+  },
 
   // watch: {
   //   $route(to, from) {
@@ -71,16 +84,6 @@ export default {
 </script>
 
 <style>
-.runtime-tip {
-  width: 60%;
-  margin: 6vh auto;
-  padding: 2vh 2.5vh;
-  border: 1px solid var(--color-border-primary);
-  border-radius: 10px;
-  background-color: var(--color-bg-surface);
-  color: var(--text-color-secondary);
-}
-
 /* .markdown { */
   /* display: inline-block;
   vertical-align: top;
