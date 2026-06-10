@@ -29,19 +29,17 @@ function ensureMarkdownRuntime() {
     import('@kangc/v-md-editor/lib/style/base-editor.css'),
     import('@kangc/v-md-editor/lib/theme/prism'),
     import('prismjs'),
-    import('prismjs/components/prism-json'),
     import('@kangc/v-md-editor/lib/preview'),
     import('@kangc/v-md-editor/lib/theme/github.js'),
     import('@kangc/v-md-editor/lib/theme/style/github.css'),
     import('highlight.js'),
     import('@kangc/v-md-editor/lib/plugins/emoji/index'),
     import('@kangc/v-md-editor/lib/plugins/emoji/emoji.css'),
-  ]).then(([
+  ]).then(async ([
     editorModule,
     ,
     prismThemeModule,
     prismModule,
-    ,
     previewModule,
     githubThemeModule,
     ,
@@ -55,6 +53,12 @@ function ensureMarkdownRuntime() {
     const githubTheme = githubThemeModule.default;
     const hljs = hljsModule.default || hljsModule;
     const createEmojiPlugin = emojiPluginModule.default;
+
+    // 先确保全局 Prism 可用，再加载语言扩展，避免出现 "Prism is not defined"。
+    if (typeof window !== 'undefined') {
+      window.Prism = Prism;
+    }
+    await import('prismjs/components/prism-json');
 
     VueMarkdownEditor.theme(createPrismTheme({ Prism }));
     VueMarkdownEditor.use(createEmojiPlugin());
