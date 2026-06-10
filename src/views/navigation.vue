@@ -1,7 +1,7 @@
 <template>
    <div class="navigation">
       <img src="../assets/caveman.jpg" class="img" />
-      <div class="brand-title">李奥's 博客</div>
+      <div class="brand-title">山顶洞人</div>
 
       <div class="nav-actions">
          <!-- 首页高亮由当前路由控制，避免手动状态和路由不同步。 -->
@@ -72,6 +72,8 @@ export default {
 </script>
 
 <style lang="css" scoped>
+@import url("https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap");
+
 /* 顶部导航容器：采用 GitHub 风格浅灰底和底部分割线。 */
 .navigation {
    display: flex;
@@ -89,10 +91,13 @@ export default {
    margin-left: 2vh;
    flex: 1;
    color: var(--text-color-primary);
-   font-family: var(--font-family-brand);
-   font-size: var(--font-size-xl);
-   font-weight: var(--font-weight-medium);
+   /* 品牌标题使用手写/书法感字体，避免默认宋体观感。 */
+   font-family: "Ma Shan Zheng", "STKaiti", "KaiTi", "YouYuan", "PingFang SC", cursive;
+   font-size: 1.5rem;
+   font-weight: 500;
    line-height: 1.4;
+   letter-spacing: 0.08em;
+   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 8px rgba(31, 35, 40, 0.08);
    text-align: left;
 }
 
