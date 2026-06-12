@@ -26,6 +26,23 @@ const api = {
       return request.post("/upload-single-file", formData);
     },
   },
+  friendlink: {
+    getAll() {
+      return request.get("/friendlinks");
+    },
+    getById(id) {
+      return request.get(`/friendlinks/${encodeURIComponent(id)}`);
+    },
+    create(data) {
+      return request.post("/friendlinks", data);
+    },
+    update(id, data) {
+      return request.patch(`/friendlinks/${encodeURIComponent(id)}`, data);
+    },
+    remove(id) {
+      return request.delete(`/friendlinks/${encodeURIComponent(id)}`);
+    },
+  },
   system: {
     getPublicIp() {
       return request.get("http://api.ipify.org/?format=json");
