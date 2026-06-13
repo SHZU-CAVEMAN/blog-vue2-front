@@ -9,6 +9,11 @@
             首页
          </div>
 
+         <!-- 关于页固定跳转到指定文章详情。 -->
+         <div :class="{ 'nav-home-active': isAboutActive }" class="nav-item nav-home" @click="jumpAbout">
+            关于
+         </div>
+
          <!-- 友链高亮同样由当前路由控制，进入友链页后文字置黑。 -->
          <div :class="{ 'nav-home-active': isFriendsActive }" class="nav-item nav-home" @click="jumpFriends">
             友链
@@ -43,6 +48,11 @@ export default {
       isFriendsActive() {
          // 友链导航的激活态：仅在 friendsComponent 路由下显示高亮。
          return this.$route.name === "friendsComponent";
+      },
+      isAboutActive() {
+         return this.$route.name === "articleViewComponent"
+            && String(this.$route.params.id) === "114"
+            && String(this.$route.params.name) === "blogger";
       }
    },
    methods: {
@@ -55,6 +65,15 @@ export default {
       jumpFriends() {
          this.$router.push({
             name: "friendsComponent",
+         });
+      },
+      jumpAbout() {
+         this.$router.push({
+            name: "articleViewComponent",
+            params: {
+               id: "114",
+               name: "blogger",
+            },
          });
       },
       toggleTheme() {
