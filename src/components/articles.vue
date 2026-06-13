@@ -84,7 +84,10 @@ export default {
         console.log("文章数据加载：", list);
       })
       .catch((err) => {
-        console.log(err);
+        console.error("文章列表加载失败：", err.message || err, {
+          code: err.code,
+          status: err.status,
+        });
       });
   },
 };

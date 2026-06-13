@@ -123,7 +123,10 @@ export default {
               module: "friends",
             });
           }
-          console.error("友链加载失败：", err);
+          console.error("友链加载失败：", err.message || err, {
+            code: err.code,
+            status: err.status,
+          });
         });
     },
   },
