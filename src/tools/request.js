@@ -1,6 +1,8 @@
 import axios from "axios";
 
-export const SERVICE_ORIGIN = "" //"http://127.0.0.1:81";
+// 开发环境：/api（由 vue.config.js 代理到本地后端）
+// 生产环境：/api（由 nginx proxy_pass 转发到后端）
+export const SERVICE_ORIGIN = process.env.VUE_APP_API_BASE_URL || "/api";
 
 // 统一请求实例：后续可在这里集中管理超时、baseURL、鉴权头等逻辑。
 const request = axios.create({
