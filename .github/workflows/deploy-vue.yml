@@ -1,0 +1,33 @@
+name: Deploy Vue Frontend
+on:
+  push:
+    branches: [ main ] # 你代码主分支，改成master自行替换
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取Vue代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 安装Node，打包dist
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build
+
+      # 3. 上传dist到宝塔前端目录（scp）
+      - name: Upload dist to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          port: ${{ secrets.SSH_PORT }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: dist/ # 本地打包产物文件夹
+          target: /www/wwwroot/blog-vue # 宝塔网站根目录
+          rm: true # 先清空服务器旧文件，避免残留
