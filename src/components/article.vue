@@ -143,16 +143,11 @@ h5:hover {
   margin-top:2vh;
   font-size: var(--font-size-md);
   padding: 1vh;
-  /* background-color: #EFF2F5; */
-  background-color: #ffffff;
-
+  background-color: #ffffff; 
   max-height: 4.5rem;
   line-height: var(--line-height-normal);
   overflow: hidden;
-
   overflow-y:scroll;
-
-
 }
 
 

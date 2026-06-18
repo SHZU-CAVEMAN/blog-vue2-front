@@ -48,8 +48,11 @@ const api = {
       return request.get("http://api.ipify.org/?format=json");
     },
     getGeoByIp(ip) {
-      return request.get(`https://ip-api.com/json/${ip}`);
+      return request.get(`http://ip-api.com/json/${ip}`);
     },
+    GetLocation(){
+      return request.get("http://ip-api.com/json/?lang=zh-CN");
+    }
   },
   request(config) {
     return request(config);

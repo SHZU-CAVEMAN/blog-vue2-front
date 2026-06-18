@@ -1,7 +1,7 @@
 <template>
    <div class="navigation">
       <img src="../assets/caveman.jpg" class="img" />
-      <div class="brand-title">山顶洞人</div>
+      <div class="brand-title">时髦的山顶洞人</div>
 
       <div class="nav-actions">
          <!-- 首页高亮由当前路由控制，避免手动状态和路由不同步。 -->
