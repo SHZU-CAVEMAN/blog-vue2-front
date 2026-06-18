@@ -41,7 +41,7 @@ export default {
       temp: [], //存放最近的十篇文章
       // 当前页码与每页条数由通用分页器双向驱动。
       page: 1,
-      pageSize: 10,
+      pageSize: 20,
       // 分页器可选的“每页行数”配置。
       pageSizeOptions: ["5", "10", "20", "30", "50"],
     };

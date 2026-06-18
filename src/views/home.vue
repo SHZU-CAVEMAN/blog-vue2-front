@@ -43,7 +43,7 @@ export default {
   methods: {
     // ...mapActions(["setArticleInfo",]),
     EventHandler(name) {
-      console.log("home组件", name);
+      //console.log("home组件", name);
       this.cateNameFlag = name;
       //点击了分类,则 cateNameFlag不为空,则显示ArticleListCate组件
       //否则显示 ArticleListNew组件

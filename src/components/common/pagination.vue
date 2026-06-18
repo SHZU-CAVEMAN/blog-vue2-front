@@ -38,7 +38,7 @@ export default {
     // 每页条数：支持父组件控制默认值与动态更新。
     pageSize: {
       type: Number,
-      default: 10,
+      default: 20,
     },
     // 每页条数候选项，遵循 ant design 的字符串数组约定。
     pageSizeOptions: {
