@@ -95,7 +95,8 @@ Vue.config.productionTip = false;//关闭生产者提示
 initializeTheme();
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
-Vue.prototype.$uploadFilesBase = `${process.env.VUE_APP_STATIC_ORIGIN || SERVICE_ORIGIN}/uploadFiles/`;
+const staticOrigin = (process.env.VUE_APP_STATIC_ORIGIN || SERVICE_ORIGIN).replace(/\/+$/, '');
+Vue.prototype.$uploadFilesBase = `${staticOrigin}/uploadFiles/`;
 // 暴露 Markdown 运行时加载器，供详情页组件在渲染前主动等待。
 Vue.prototype.$ensureMarkdownRuntime = ensureMarkdownRuntime;
 // 暴露运行时就绪状态：详情页可据此跳过重复“加载中”闪烁。
