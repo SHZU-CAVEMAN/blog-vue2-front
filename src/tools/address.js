@@ -20,7 +20,6 @@ function translate(address){
         case 'Shandong':x = '山东';break;
 
         case 'Shanxi':x = '陕西';break;
-        case 'Hubei':x = '山西';break;
 
         case 'Gansu':x = '甘肃';break;
         case 'Qinghai':x = '青海';break;
