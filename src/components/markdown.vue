@@ -551,7 +551,7 @@ export default {
   overflow-y: scroll;
 }
 
-.outter {
+.info_index.outter {
   /* 滚动超过阈值后吸顶，避免侧栏离开可视区。 */
   position: fixed;
   top: 0;
@@ -620,19 +620,24 @@ h1:hover a {
   /* background-color: #ffffff; */
   overflow: hidden;
   width: 18%;
-  /* min-height: 10vh; */
-  /* max-height: 50vh; */
-  /* overflow-y: scroll; */
-  border-radius: 2vh;
+  min-height: 10vh;
+  max-height: calc(100vh - 12vh);
+  box-sizing: border-box;
+  border-radius: 1vh;
   border: 1px solid var(--color-border-primary);
+}
+
+.catalog.outter {
+  top: 2vh;
+  max-height: calc(100vh - 4vh);
 }
 
 .catalog_content {
   /* 目录内容区单独滚动，防止长目录把整块容器撑高。 */
   /* background-color: #e7f3ff; */
   /* background-color: #ffffff; */
-  overflow-y: scroll;
-  max-height: 45vh;
+  overflow-y: auto;
+  max-height: calc(100vh - 22vh);
 }
 
 /* 隐藏滚动条 */
