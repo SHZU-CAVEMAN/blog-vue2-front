@@ -29,6 +29,6 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: dist/ # 本地打包产物文件夹
-          target: /www/wwwroot/blog-vue # 宝塔网站根目录
-          rm: true # 先清空服务器旧文件，避免残留
+          target: /www/wwwroot/blog-vue/ # 宝塔网站根目录
+          # rm: true # 先清空服务器旧文件，避免残留
           strip_components: 1 # 只上传dist内文件，不包含dist文件夹
