@@ -4,7 +4,7 @@
 
     <h5 style="" @click="jump(article.id, article.title)"> {{ article.title }}</h5>
 
-    <div style="display: flex;">
+    <div class="article-body">
       <div :class="{ content: true, content_add: flag }">
         <div style="">
           <div>
@@ -98,6 +98,11 @@ export default {
 
   padding: 2vh 3vh 3vh 3vh;
 
+}
+
+/* 文章卡片主体：桌面端信息区和配图左右并排。 */
+.article-body {
+  display: flex;
 }
 
 
@@ -238,5 +243,43 @@ h5:hover {
   height: 160px;
   object-fit: cover;
   flex: 1;
+}
+
+/* 手机端改为单列阅读流：标题/摘要在上，配图在下。 */
+@media (max-width: 768px) {
+  .article {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .article-body {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .content {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #picture {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .intro {
+    margin-top: 8px;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .imageLoad>>>img {
+    height: auto;
+    max-height: 220px;
+  }
 }
 </style>

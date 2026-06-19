@@ -38,7 +38,7 @@
 
             <!-- 二级评论 -->
             <!-- 遍历每个一级评论时，取出是否有相应的二级评论（再次遍历） -->
-            <div v-for="Bcomment in commentListByProps" :key="Bcomment.id" style="margin-left: 8%;">
+            <div v-for="Bcomment in commentListByProps" :key="Bcomment.id" class="child-comment-wrap">
 
                 <div v-if="Acomment.id == Bcomment.toWhich" class="comment_item">
                     <img :src="avatarUrl(Bcomment.avatar)" />
@@ -190,38 +190,48 @@ export default {
 </script>
 
 <style scoped>
+/* 评论主容器：桌面端与正文保持同一宽度体系（60% + 20% 居中偏移）。 */
 .comment {
     background-color: var(--color-bg-surface);
     width: 60%;
     min-height: 30vh;
     margin-left: 20%;
-    margin-top: 5vh;
+    margin-top: 2.5vh;
     border: 1px solid var(--color-border-primary);
-    padding: 3vh;
+    padding: clamp(12px, 2vh, 22px);
     border-radius: 1vh;
+    box-sizing: border-box;
 }
 
+/* 单条评论项：头像 + 内容的稳定横向布局。 */
 .comment_item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     margin-top: 1%;
     background-color: var(--color-bg-muted);
-    /* background-color: #5e6267; */
-    padding: 1% 1%;
+    padding: 10px;
+    border-radius: 8px;
 
 }
 
+/* 评论头像固定尺寸，避免在不同设备上被文字挤压变形。 */
 img {
-    width: 8%;
-    height: 9vh;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    vertical-align: top;
     object-fit: cover;
+    flex: 0 0 44px;
 
 }
 
+/* 评论正文区自适应扩展，支持长文本折行。 */
 .content {
-    margin-left: 2%;
-    width: 88%;
-    display: inline-block;
+    margin-left: 0;
+    width: auto;
+    display: block;
+    flex: 1;
+    min-width: 0;
 }
 .content_name{
     font-size: 1rem;
@@ -230,11 +240,17 @@ img {
 }
 .isCommentEdit {
     margin-top: 2vh;
-    margin-left: 8%
+    margin-left: 0;
+}
+
+.child-comment-wrap {
+    /* 二级评论整体缩进，形成层级关系。 */
+    margin-left: 8%;
 }
 
 
 .replyTo {
+    /* 回复入口与时间/IP拉开视觉距离。 */
     margin-left: 3vh;
 }
 
@@ -243,6 +259,7 @@ img {
     /* font-weight: 550; */
 }
 .ip{
+    /* IP 文案次级强调，避免抢占正文注意力。 */
     margin-left: 3vh;
     color:var(--interactive-text-rest)
 }
@@ -261,5 +278,43 @@ img {
 .comment-preview {
     /* 覆盖 v-md-editor 预览区默认浅色背景，让评论正文跟随主题。 */
     background-color: var(--color-bg-muted) !important;
+}
+
+/* 平板/小屏：评论容器切换到全宽，层级缩进收窄。 */
+@media (max-width: 1200px) {
+    .comment {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 12px;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .child-comment-wrap {
+        /* 小屏减少二级缩进，保留正文可读宽度。 */
+        margin-left: 18px;
+    }
+
+    .comment_item {
+        /* 小屏保持紧凑内边距，降低视觉拥挤。 */
+        padding: 10px;
+    }
+}
+
+/* 手机窄屏：头像进一步缩小，避免挤占正文宽度。 */
+@media (max-width: 576px) {
+    .comment {
+        padding: 10px;
+    }
+
+    img {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .child-comment-wrap {
+        margin-left: 12px;
+    }
 }
 </style>

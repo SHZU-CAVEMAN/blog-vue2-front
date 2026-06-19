@@ -229,4 +229,65 @@ export default {
    /* 夜间态把滑块平移到右侧，形成开关切换感。 */
    transform: translateX(26px);
 }
+
+/* 手机导航：允许换行，提升触控区域，避免标题与操作区挤压。 */
+@media (max-width: 768px) {
+   .navigation {
+      height: auto;
+      min-height: 64px;
+      padding: 8px 12px;
+      flex-wrap: wrap;
+      row-gap: 8px;
+   }
+
+   .img {
+      width: 40px;
+      height: 40px;
+   }
+
+   .brand-title {
+      margin-left: 10px;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      min-width: 0;
+   }
+
+   .nav-actions {
+      width: 100%;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 4px;
+      height: auto;
+   }
+
+   .nav-home {
+      font-size: 0.95rem;
+   }
+}
+
+/* 超小屏进一步压缩控件尺寸，防止一行溢出。 */
+@media (max-width: 420px) {
+   .brand-title {
+      font-size: 1rem;
+   }
+
+   .nav-actions {
+      gap: 8px;
+   }
+
+   .theme-toggle {
+      width: 52px;
+      height: 30px;
+      padding: 0 7px;
+   }
+
+   .toggle-knob {
+      width: 22px;
+      height: 22px;
+   }
+
+   .toggle-knob-night {
+      transform: translateX(22px);
+   }
+}
 </style>

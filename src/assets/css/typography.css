@@ -172,3 +172,34 @@ small {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-medium);
 }
+
+/* 移动端全局兜底：防横向溢出，媒体内容自适应。 */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .markdown-body,
+  .v-md-editor-preview {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}

@@ -1,7 +1,13 @@
 <template>
-  <div style="display: flex; margin-top: 0vh">
+  <div class="markdown-layout" @touchstart.passive="handleTouchStart" @touchend.passive="handleTouchEnd">
+    <!-- 移动端抽屉入口：左侧同类文章、右侧目录。 -->
+    <button class="drawer-handle drawer-handle-left" @click="openLeftDrawer">同类</button>
+    <button class="drawer-handle drawer-handle-right" @click="openRightDrawer">目录</button>
+    <!-- 抽屉打开时显示遮罩，点击遮罩收起抽屉。 -->
+    <div v-if="isAnyDrawerOpen" class="drawer-mask" @click="closeDrawers"></div>
+
     <!-- 左侧 ：当前分类 -->
-    <div v-bind:class="{ info_index: true, outter: outter }">
+    <div v-bind:class="{ info_index: true, outter: outter, 'drawer-open': isLeftDrawerOpen }">
       <div style="">
         <div style="
             font-size: 0.9rem;
@@ -56,7 +62,7 @@
     </div>
 
     <!-- 文章目录 -->
-    <div :class="{ catalog: true, outter: outter }">
+    <div :class="{ catalog: true, outter: outter, 'drawer-open': isRightDrawerOpen }">
       <div class="el-icon-tickets catalog-head">
         <a-icon type="container" />
         <a style="margin-bottom: 2px; margin-left: 2vh"> 目录</a>
@@ -115,16 +121,30 @@ export default {
 
       flag: true,
       outter: false,
+      // 左抽屉（同类文章）开关状态。
+      isLeftDrawerOpen: false,
+      // 右抽屉（目录）开关状态。
+      isRightDrawerOpen: false,
 
       articlesCurrent: [],
       item_current_add: false,
       scroll: false,
       articleListLoading: null,
+      // 触摸手势起点：用于计算横向滑动方向与距离。
+      touchStartX: 0,
+      touchStartY: 0,
     };
+  },
+  computed: {
+    isAnyDrawerOpen() {
+      // 任一抽屉打开都视为“抽屉态”，用于遮罩和滚动锁定。
+      return this.isLeftDrawerOpen || this.isRightDrawerOpen;
+    },
   },
   watch: {
     id: {
       handler() {
+        this.closeDrawers();
         // 1 路由参数变化时局部刷新数据，避免整页 reload 造成体验抖动。
         // 2 原先this.$router.go(0)：等同于浏览器刷新（location.reload()），整个页面销毁重建，Vuex 状态、sessionStorage 以外的所有内存数据清空，会有明显的白屏闪烁
         // 3 refreshArticle 只在组件内部重新执行一遍数据请求和状态重置，DOM 不销毁、页面不闪烁、Vuex 状态保留，路由参数（id/name）变化时平滑切换到新文章。
@@ -132,8 +152,15 @@ export default {
       },
     },
     name() {
+      this.closeDrawers();
       // 标题参数变化时同步刷新，确保目录和上下篇与当前文章一致。
       this.refreshArticle();
+    },
+    isAnyDrawerOpen(next) {
+      // 抽屉态锁定 body 滚动，防止背景正文跟随滚动。
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = next ? "hidden" : "";
+      }
     },
   },
   mounted() {
@@ -521,16 +548,106 @@ export default {
         });
       }
     },
+    openLeftDrawer() {
+      // 打开左抽屉前先关闭右抽屉，避免双抽屉重叠。
+      this.isRightDrawerOpen = false;
+      this.isLeftDrawerOpen = true;
+    },
+    openRightDrawer() {
+      // 打开右抽屉前先关闭左抽屉，避免双抽屉重叠。
+      this.isLeftDrawerOpen = false;
+      this.isRightDrawerOpen = true;
+    },
+    closeDrawers() {
+      // 统一关闭入口：按钮、遮罩、路由切换、手势都会调用。
+      this.isLeftDrawerOpen = false;
+      this.isRightDrawerOpen = false;
+    },
+    isMobileDrawerMode() {
+      // 抽屉手势仅在中小屏启用，桌面端保持原有三栏交互。
+      return typeof window !== "undefined" && window.innerWidth <= 1200;
+    },
+    handleTouchStart(event) {
+      if (!this.isMobileDrawerMode() || !event.touches || !event.touches.length) {
+        return;
+      }
+
+      // 记录手势起点坐标，供 touchend 计算偏移量。
+      this.touchStartX = event.touches[0].clientX;
+      this.touchStartY = event.touches[0].clientY;
+    },
+    handleTouchEnd(event) {
+      if (!this.isMobileDrawerMode() || !event.changedTouches || !event.changedTouches.length) {
+        return;
+      }
+
+      const endX = event.changedTouches[0].clientX;
+      const endY = event.changedTouches[0].clientY;
+      const deltaX = endX - this.touchStartX;
+      const deltaY = endY - this.touchStartY;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      // 只响应横向滑动，降低误触概率。
+      if (absX < 52 || absY > absX) {
+        return;
+      }
+
+      const width = window.innerWidth || 0;
+      // 仅在边缘触发“打开抽屉”，降低误触概率。
+      const edgeTriggerWidth = 26;
+
+      if (!this.isAnyDrawerOpen) {
+        // 左边缘向右滑：打开左抽屉。
+        if (this.touchStartX <= edgeTriggerWidth && deltaX > 0) {
+          this.openLeftDrawer();
+          return;
+        }
+
+        // 右边缘向左滑：打开右抽屉。
+        if (this.touchStartX >= width - edgeTriggerWidth && deltaX < 0) {
+          this.openRightDrawer();
+        }
+        return;
+      }
+
+      // 左抽屉打开时，向左滑可关闭。
+      if (this.isLeftDrawerOpen && deltaX < 0) {
+        this.closeDrawers();
+        return;
+      }
+
+      // 右抽屉打开时，向右滑可关闭。
+      if (this.isRightDrawerOpen && deltaX > 0) {
+        this.closeDrawers();
+      }
+    },
   },
   beforeDestroy() {
     // 卸载时移除滚动监听，避免重复绑定导致的性能问题。
     window.removeEventListener("scroll", this.handleScroll);
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+    }
   },
 };
 </script>
 
 <style scoped>
+/* 详情页基础三栏：左同类 + 中正文 + 右目录。 */
+.markdown-layout {
+  display: flex;
+  margin-top: 0;
+}
+
+/* 默认隐藏移动端抽屉入口和遮罩。 */
+.drawer-handle,
+.drawer-mask {
+  display: none;
+}
+
 .info_index::-webkit-scrollbar {
+  /* 左侧同类列表隐藏滚动条，保留滚动能力。 */
   width: 0 !important;
 }
 
@@ -628,6 +745,7 @@ h1:hover a {
 }
 
 .catalog.outter {
+  /* 页面下滚后目录维持更贴顶的吸附位置。 */
   top: 2vh;
   max-height: calc(100vh - 4vh);
 }
@@ -696,6 +814,7 @@ h1:hover a {
 }
 
 .meta-item {
+  /* 元信息单项不换行，避免时间/分类被截断换行。 */
   white-space: nowrap;
 }
 
@@ -752,6 +871,7 @@ h1:hover a {
 }
 
 .sider {
+  /* 目录活动指示条轨道。 */
   width: 2px;
   height: 100%;
   background: #999999;
@@ -764,6 +884,7 @@ h1:hover a {
 }
 
 .siderbar {
+  /* 目录活动指示条滑块。 */
   display: flex;
   width: 100%;
   height: 4vh;
@@ -898,5 +1019,111 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
 
 .body /deep/ .markdown-body hr {
   border-color: var(--color-border-primary) !important;
+}
+
+/* 详情页中小屏抽屉模式：正文优先，左右栏改为浮层。 */
+@media (max-width: 1200px) {
+  .markdown-layout {
+    /* 小屏切换为单列，正文占满可视宽度。 */
+    display: block;
+    padding: 0 10px;
+  }
+
+  .body {
+    /* 正文容器与抽屉解耦，避免被侧栏挤压。 */
+    width: 100%;
+    margin-left: 0;
+    margin-top: 6px;
+  }
+
+  .drawer-handle {
+    /* 左右抽屉触发按钮固定在屏幕边缘。 */
+    display: inline-flex;
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1201;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 8px;
+    color: #ffffff;
+    background: rgba(33, 37, 41, 0.76);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  .drawer-handle-left {
+    /* 左侧“同类”抽屉触发按钮位置。 */
+    left: 6px;
+  }
+
+  .drawer-handle-right {
+    /* 右侧“目录”抽屉触发按钮位置。 */
+    right: 6px;
+  }
+
+  .drawer-mask {
+    /* 抽屉开启时的背景遮罩层。 */
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1198;
+    background: rgba(15, 23, 42, 0.32);
+    backdrop-filter: blur(2px);
+  }
+
+  .info_index,
+  .info_index.outter,
+  .catalog,
+  .catalog.outter {
+    /* 左右侧栏统一为 fixed 浮层，避免跟随正文滚动。 */
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    margin: 0;
+    width: min(84vw, 320px);
+    max-width: min(84vw, 320px);
+    max-height: 100vh;
+    z-index: 1200;
+    overflow-y: auto;
+    box-sizing: border-box;
+    transition: transform 0.24s ease;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .info_index,
+  .info_index.outter {
+    left: 0;
+    /* 左抽屉默认收起。 */
+    transform: translateX(-104%);
+    padding: 12px;
+  }
+
+  .catalog,
+  .catalog.outter {
+    right: 0;
+    /* 右抽屉默认收起。 */
+    transform: translateX(104%);
+    margin-top: 0;
+  }
+
+  .info_index.drawer-open,
+  .catalog.drawer-open {
+    /* 激活状态滑入屏幕。 */
+    transform: translateX(0);
+  }
+
+  .catalog-body {
+    /* 小屏目录内边距收紧，增加可视条目数。 */
+    padding: 10px;
+  }
+
+  .catalog_content {
+    /* 抽屉模式下取消固定高度，使用容器自然滚动。 */
+    max-height: none;
+  }
 }
 </style>
