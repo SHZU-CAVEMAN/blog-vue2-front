@@ -15,6 +15,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # vue前台展示：生成生产环境配置
+      - name: Create .env.production
+        run: |
+          cat > .env.production <<EOF
+          VUE_APP_API_BASE_URL=${{ secrets.VUE_APP_API_BASE_URL }}
+          VUE_APP_STATIC_ORIGIN=${{ secrets.VUE_APP_STATIC_ORIGIN }}
+          EOF
+          echo "生成 .env.production 成功"
+
       - name: Install & Build
         run: |
           npm install

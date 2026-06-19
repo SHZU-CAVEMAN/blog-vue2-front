@@ -77,6 +77,8 @@ npm run build
 
 构建产物在 `dist/`。
 
+**生产环境配置** 通过 CI/CD 流程自动生成，见下方"部署与 CI/CD"章节。
+
 ## 🔌 请求与环境配置
 
 统一请求入口位于 `src/tools/request.js`。
@@ -102,11 +104,31 @@ npm run build
 
 即前端请求 `/articles` 会由开发服务器转发到后端 `81` 端口。
 
-### 生产环境推荐部署方式
+### 生产环境部署
 
-1. 执行 `npm run build`
-2. 将 `dist` 内容放到后端可静态托管目录（例如 Express 的 `public`）
-3. 由后端统一提供页面与 API
+生产环境通过 CI/CD 自动构建并生成配置。工作流文件位于 `.github/workflows/deploy-vue.yml`。
+
+**部署流程：**
+
+1. **设置 GitHub Secrets**（用于 CI/CD 中注入生产配置）
+   - `VUE_APP_STATIC_ORIGIN` — 生产静态资源地址（例如 `http://47.103.116.170/`）
+   - `SERVER_IP` — 服务器地址
+   - `SSH_PORT` — SSH 端口
+   - `SSH_PRIVATE_KEY` — SSH 私钥
+
+2. **CI/CD 自动化流程**
+   - 生成 `.env.production`（包含生产地址）
+   - 执行 `npm install` 和 `npm run build`
+   - 上传 `dist/` 到宝塔服务器
+
+3. **本地测试**（可选）
+   ```bash
+   echo "VUE_APP_API_BASE_URL=/api
+   VUE_APP_STATIC_ORIGIN=http://your-production-domain/" > .env.production
+   npm run build
+   ```
+
+**⚠️ 注意：** `.env.production` 不提交到仓库，由 CI/CD 在构建时动态生成。
 
 ## 📚 统一 API 说明
 
@@ -157,9 +179,10 @@ npm run build
 
 ## 📌 后续建议
 
-- 增加 `.env.development` / `.env.production`，将服务地址配置化
+- ✅ 环境配置已支持 `.env.development`（本地开发）和 CI/CD 生成 `.env.production`（自动部署）
 - 补充单元测试与 e2e 测试
 - 增加构建产物体积分析（webpack-bundle-analyzer）
+- 完善错误监控上报（errorMonitor 中的 reportUrl）
 
 ## 📄 License
 
