@@ -9,12 +9,15 @@
         <v-md-editor v-model="comment" :autofocus='autofocus' left-toolbar="undo | image  emoji" :disabled-menus="[]"
             placeholder="欢迎评论" right-toolbar="preview" @upload-image="handleUploadImage" class="editor" />
 
-        <div style="display: flex; margin-top: 2vh;justify-content: space-between;">
-            欢迎归来！
-            <!-- todo:如果评论编辑板是最上层的那个，则不需要有“取消”这个按钮 -->
-            <div class="button" style="margin-left:50%;" @click="cancel">取消</div>
-            <div class="button" style="" @click="commit">提交评论</div>
-
+        <div class="comment-edit-actions">
+            <span>欢迎归来！</span>
+            <div class="comment-edit-buttons">
+                <!-- todo:如果评论编辑板是最上层的那个，则不需要有“取消”这个按钮 -->
+                <!-- 使用通用按钮组件，统一全站按钮样式与交互。 -->
+                <common-button @click="cancel">取消</common-button>
+                <!-- primary 语义按钮：强调提交操作。 -->
+                <common-button variant="primary" @click="commit">提交评论</common-button>
+            </div>
         </div>
 
 
@@ -67,7 +70,7 @@ export default {
             });
         },
         cancel() {
-            // console.log("cancel");
+            // 收起当前回复编辑框（由评论列表组件监听关闭）。
             this.$bus.$emit("closeCommentEdit")//不传值
         },
         show(data) {
@@ -93,6 +96,7 @@ export default {
                 this.avatar = Math.floor(Math.random() * 9 + 1)+'.jpg';
             }
             // console.log('最终数据', this.nickname, this.email, this.avatar, this.articleName, this.time)
+            // 提交评论：合并用户信息、评论内容、文章上下文后发送。
             this.$api.comment.add({
                 // 来自子组件的三项数据：
                 nickname: this.nickname,
@@ -198,26 +202,26 @@ export default {
     color: var(--interactive-text-active);
 }
 
-.button {
-    /* 评论操作按钮统一走主题变量，避免写死黑白导致夜间模式反差异常。 */
-    /* width: 12vh; */
-    height: 4vh;
-    background-color: var(--color-bg-surface);
-    border: 1px solid var(--color-border-primary);
-    border-radius: 1vh;
-    /* margin-left: 5vh; */
+.comment-edit-actions {
+    /* 编辑器底部操作区：左提示文案 + 右按钮组。 */
     display: flex;
+    margin-top: 2vh;
+    justify-content: space-between;
     align-items: center;
-    padding: 2vh;
-    /* box-shadow: 1px 1px 1px rgb(152, 152, 152); */
-    background-color: var(--color-bg-muted);
-    color: var(--text-color-primary);
-
 }
 
-.button:hover {
-    /* 悬浮态只提升文字对比和轻微背景变化，不使用高饱和色。 */
-    background-color: var(--color-bg-surface);
-    color: var(--interactive-text-active);
+.comment-edit-buttons {
+    /* 按钮组采用横向排列，按钮间留固定间距。 */
+    display: flex;
+    gap: 10px;
+}
+
+@media (max-width: 576px) {
+    .comment-edit-actions {
+        /* 小屏改为纵向堆叠，避免按钮和文案挤压。 */
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
 }
 </style>

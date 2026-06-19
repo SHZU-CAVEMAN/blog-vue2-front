@@ -1,10 +1,11 @@
 import CommonModal from "./modal.vue";
 import CommonPagination from "./pagination.vue";
+import CommonButton from "./button.vue";
 
 // 统一维护可全局注册的通用组件清单。
-const components = [CommonModal, CommonPagination];
+const components = [CommonModal, CommonPagination, CommonButton];
 
-export { CommonModal, CommonPagination };
+export { CommonModal, CommonPagination, CommonButton };
 
 export default {
 	install(Vue) {

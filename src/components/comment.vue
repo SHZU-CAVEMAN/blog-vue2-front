@@ -206,6 +206,7 @@ export default {
 /* 单条评论项：头像 + 内容的稳定横向布局。 */
 .comment_item {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 10px;
     margin-top: 1%;
@@ -230,7 +231,7 @@ img {
     margin-left: 0;
     width: auto;
     display: block;
-    flex: 1;
+    flex: 1 1 calc(100% - 54px);
     min-width: 0;
 }
 .content_name{
@@ -239,8 +240,11 @@ img {
     /* font-weight: 540; */
 }
 .isCommentEdit {
+    /* 强制回复编辑框占据新行，显示在当前评论项下方。 */
+    flex-basis: 100%;
+    width: 100%;
     margin-top: 2vh;
-    margin-left: 0;
+    margin-left: 54px;
 }
 
 .child-comment-wrap {
@@ -315,6 +319,10 @@ img {
 
     .child-comment-wrap {
         margin-left: 12px;
+    }
+
+    .isCommentEdit {
+        margin-left: 0;
     }
 }
 </style>
