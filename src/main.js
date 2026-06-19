@@ -93,8 +93,10 @@ function warmupMarkdownRuntime() {
 
 Vue.config.productionTip = false;//关闭生产者提示
 initializeTheme();
+// 全局注册请求实例和 API 对象，供组件/工具直接使用 this.$request / this.$api。
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
+// 暴露静态资源根路径，供组件/工具在运行时拼接静态资源 URL。
 const staticOrigin = (process.env.VUE_APP_STATIC_ORIGIN || SERVICE_ORIGIN).replace(/\/+$/, '');
 Vue.prototype.$uploadFilesBase = `${staticOrigin}/uploadFiles/`;
 // 暴露 Markdown 运行时加载器，供详情页组件在渲染前主动等待。

@@ -2,11 +2,16 @@ import axios from "axios";
 
 // 开发环境：/api（由 vue.config.js 代理到本地后端）
 // 生产环境：/api（由 nginx proxy_pass 转发到后端）
-export const SERVICE_ORIGIN = process.env.VUE_APP_API_BASE_URL || "/api";
+const API_ORIGIN = process.env.VUE_APP_API_BASE_URL || "/api";
+export const SERVICE_ORIGIN = process.env.VUE_APP_STATIC_ORIGIN || (
+  process.env.NODE_ENV === "production" && typeof window !== "undefined"
+    ? window.location.origin
+    : API_ORIGIN
+);
 
-// 统一请求实例：后续可在这里集中管理超时、baseURL、鉴权头等逻辑。
+// 统一业务请求实例（不包含静态资源请求）
 const request = axios.create({
-  baseURL: SERVICE_ORIGIN,
+  baseURL: API_ORIGIN,
   timeout: 15000,
 });
 
