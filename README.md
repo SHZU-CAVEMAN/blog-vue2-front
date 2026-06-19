@@ -67,7 +67,7 @@ npm install --legacy-peer-deps
 npm run serve
 ```
 
-默认前端运行在 `http://localhost:8080`。
+前端运行在 `http://localhost:8080`。
 
 ### 3. 🏗️ 生产构建
 
@@ -83,15 +83,9 @@ npm run build
 
 统一请求入口位于 `src/tools/request.js`。
 
-当前配置：
-
-- `SERVICE_ORIGIN = ""`
-- axios `baseURL = SERVICE_ORIGIN`
-
-这意味着：
-
-- 开发环境下走 `vue.config.js` 的代理（`devServer.proxy`）
-- 生产环境建议前后端同源部署
+- 开发环境下业务接口走 `/api`，由 `vue.config.js` 的 `devServer.proxy` 转发到本地后端
+- 生产环境业务接口默认走 `/api`（由 nginx 等网关转发）
+- 生产环境静态资源未配置 `VUE_APP_STATIC_ORIGIN` 时，回退到当前站点域名（不会带 `/api` 前缀）
 
 ### 开发环境代理
 
@@ -100,9 +94,9 @@ npm run build
 `vue.config.js` 已配置：
 
 - 前端端口：`8080`
-- 代理目标：`http://localhost:81`
+- 代理目标：`http://localhost:8081`
 
-即前端请求 `/articles` 会由开发服务器转发到后端 `81` 端口。
+即前端请求 `/api/articles` 会由开发服务器转发到后端 `8081` 端口的 `/articles`。
 
 ### 生产环境部署
 
@@ -111,10 +105,15 @@ npm run build
 **部署流程：**
 
 1. **设置 GitHub Secrets**（用于 CI/CD 中注入生产配置）
+	- `VUE_APP_API_BASE_URL` — 业务接口前缀（例如 `/api`）
    - `VUE_APP_STATIC_ORIGIN` — 生产静态资源地址（例如 `http://47.103.116.170/`）
+   - 
+ 	 以上两个可不配置，代码中兜底了。
+
    - `SERVER_IP` — 服务器地址
    - `SSH_PORT` — SSH 端口
    - `SSH_PRIVATE_KEY` — SSH 私钥
+   - `TARGET_DIR` — 服务器项目路径
 
 2. **CI/CD 自动化流程**
    - 生成 `.env.production`（包含生产地址）
@@ -128,7 +127,7 @@ npm run build
    npm run build
    ```
 
-**⚠️ 注意：** `.env.production` 不提交到仓库，由 CI/CD 在构建时动态生成。
+**⚠️ 注意：** `.env.production` 一般不提交到仓库，由 CI/CD 在构建时动态生成。
 
 ## 📚 统一 API 说明
 
@@ -149,12 +148,6 @@ npm run build
 
 组件内推荐通过 `this.$api.xxx` 调用，不直接散写 axios。
 
-
-## 🛠️ 可用脚本
-
-- `npm run serve` 启动开发环境
-- `npm run build` 生产构建
-- `npm run lint` 代码检查
 
 ## ❓ 常见问题
 
