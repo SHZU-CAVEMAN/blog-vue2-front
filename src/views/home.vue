@@ -308,7 +308,8 @@ export default {
     position: fixed !important;
     /* 抽屉高度 = 全屏减去导航栏，再留一点空隙。 */
     top: calc(var(--mobile-nav-height, 80px) + 12px);
-    bottom: 0;
+    /* 用显式高度锁定到底部，避免 top/bottom/max-height 叠加导致底部悬空。 */
+    height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
     width: min(84vw, 320px);
     max-width: min(84vw, 320px);
     z-index: 1200;
@@ -318,7 +319,6 @@ export default {
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     background: var(--color-bg-surface);
     padding-top: 8px;
-    max-height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
   }
 
   /* 抽屉模式下覆盖左右栏组件内部 sticky，避免出现“悬浮”和顶部大空白。 */
@@ -335,7 +335,7 @@ export default {
   .left-side .left {
     /* 左侧分类内部允许独立滚动。 */
     overflow-y: auto;
-    max-height: calc(100vh - 16px);
+    max-height: 100%;
   }
 
   .right-side .notice,
