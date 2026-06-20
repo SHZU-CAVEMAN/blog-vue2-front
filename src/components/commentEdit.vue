@@ -7,7 +7,7 @@
             
         <!-- 评论辑主要界面 -->
         <v-md-editor v-model="comment" :autofocus='autofocus' left-toolbar="undo | image  emoji" :disabled-menus="[]"
-            placeholder="欢迎评论" right-toolbar="preview" @upload-image="handleUploadImage" class="editor" />
+            placeholder="欢迎评论（评论框右上角可开启预览）" mode="edit" right-toolbar="preview" @upload-image="handleUploadImage" class="editor" />
 
         <div class="comment-edit-actions">
             <span>欢迎归来！</span>
