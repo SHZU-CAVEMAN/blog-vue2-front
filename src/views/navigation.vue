@@ -294,11 +294,16 @@ export default {
 /* 手机导航：允许换行，提升触控区域，避免标题与操作区挤压。 */
 @media (max-width: 768px) {
    .navigation {
+      /* 小屏滚动时吸顶，保持导航和主题开关始终可见。 */
+      position: sticky;
+      top: 0;
+      z-index: 1600;
       height: auto;
       min-height: 64px;
       padding: 8px 12px;
       flex-wrap: wrap;
       row-gap: 8px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
    }
 
    .img {
