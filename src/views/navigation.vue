@@ -4,27 +4,57 @@
       <div class="brand-title">时髦的山顶洞人</div>
 
       <div class="nav-actions">
-         <!-- 首页高亮由当前路由控制，避免手动状态和路由不同步。 -->
-         <div :class="{ 'nav-home-active': isHomeActive }" class="nav-item nav-home" @click="jumpHome">
+         <!-- 桌面端导航项：移动端会折叠到下方抽屉面板。 -->
+         <div class="nav-links-desktop">
+            <!-- 首页高亮由当前路由控制，避免手动状态和路由不同步。 -->
+            <div :class="{ 'nav-home-active': isHomeActive }" class="nav-item nav-home" @click="jumpHome">
+               首页
+            </div>
+
+            <!-- 关于页固定跳转到指定文章详情。 -->
+            <div :class="{ 'nav-home-active': isAboutActive }" class="nav-item nav-home" @click="jumpAbout">
+               关于
+            </div>
+
+            <!-- 友链高亮同样由当前路由控制，进入友链页后文字置黑。 -->
+            <div :class="{ 'nav-home-active': isFriendsActive }" class="nav-item nav-home" @click="jumpFriends">
+               友链
+            </div>
+         </div>
+
+         <!-- 移动端控制区：折叠按钮与主题切换并排显示。 -->
+         <div class="mobile-actions">
+            <button class="mobile-nav-toggle" type="button" @click="toggleMobileNav">
+               <!-- 三横线汉堡图标：展开时切换为 X 形态。 -->
+               <span class="hamburger" :class="{ 'hamburger-open': mobileNavOpen }" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+               </span>
+            </button>
+
+            <!-- 日夜开关：容器和滑块都根据 isNight 切换对应样式。 -->
+            <div :class="{ 'theme-toggle-night': isNight }" class="theme-toggle" @click="toggleTheme">
+               <span class="toggle-icon toggle-sun">☀</span>
+               <span class="toggle-icon toggle-moon">☾</span>
+               <!-- 滑块根据 isNight 切换位置 ：-->
+               <span :class="{ 'toggle-knob-night': isNight }" class="toggle-knob"></span>
+            </div>
+         </div>
+      </div>
+
+      <!-- 移动端折叠导航：点击“菜单”后展开。 -->
+      <div v-if="mobileNavOpen" class="mobile-nav-panel">
+         <div :class="{ 'nav-home-active': isHomeActive }" class="mobile-nav-item" @click="jumpHome">
             首页
          </div>
 
-         <!-- 关于页固定跳转到指定文章详情。 -->
-         <div :class="{ 'nav-home-active': isAboutActive }" class="nav-item nav-home" @click="jumpAbout">
+         <div :class="{ 'nav-home-active': isAboutActive }" class="mobile-nav-item" @click="jumpAbout">
             关于
          </div>
 
-         <!-- 友链高亮同样由当前路由控制，进入友链页后文字置黑。 -->
-         <div :class="{ 'nav-home-active': isFriendsActive }" class="nav-item nav-home" @click="jumpFriends">
+         <div :class="{ 'nav-home-active': isFriendsActive }" class="mobile-nav-item" @click="jumpFriends">
             友链
-         </div>
-
-         <!-- 日夜开关：容器和滑块都根据 isNight 切换对应样式。 -->
-         <div :class="{ 'theme-toggle-night': isNight }" class="theme-toggle" @click="toggleTheme">
-            <span class="toggle-icon toggle-sun">☀</span>
-            <span class="toggle-icon toggle-moon">☾</span>
-            <!-- 滑块根据 isNight 切换位置 ：-->
-            <span :class="{ 'toggle-knob-night': isNight }" class="toggle-knob"></span>
          </div>
       </div>
    </div>
@@ -38,6 +68,13 @@ export default {
    data() {
       return {
          isNight: false,
+         mobileNavOpen: false,
+      }
+   },
+   watch: {
+      $route() {
+         // 路由变化后自动收起移动端菜单，避免页面切换后面板残留。
+         this.mobileNavOpen = false;
       }
    },
    computed: {
@@ -61,11 +98,13 @@ export default {
          this.$router.push({
             name: "articles",
          });
+         this.mobileNavOpen = false;
       },
       jumpFriends() {
          this.$router.push({
             name: "friendsComponent",
          });
+         this.mobileNavOpen = false;
       },
       jumpAbout() {
          this.$router.push({
@@ -75,6 +114,11 @@ export default {
                name: "blogger",
             },
          });
+         this.mobileNavOpen = false;
+      },
+      toggleMobileNav() {
+         // 移动端导航折叠开关：控制悬浮面板的显示与隐藏。
+         this.mobileNavOpen = !this.mobileNavOpen;
       },
       toggleTheme() {
          // 切换全局主题：同步更新 html[data-theme] 和本地存储。
@@ -132,6 +176,23 @@ export default {
    justify-content: flex-end;
    gap: 3vh;
    height: 100%;
+}
+
+.nav-links-desktop {
+   display: flex;
+   align-items: center;
+   gap: 3vh;
+   height: 100%;
+}
+
+/* 移动端控制区默认隐藏：仅在小屏展示。 */
+.mobile-actions {
+   display: none;
+}
+
+/* 移动端折叠菜单默认隐藏。 */
+.mobile-nav-panel {
+   display: none;
 }
 
 /* 首页文案基础态：中性灰。 */
@@ -253,15 +314,107 @@ export default {
    }
 
    .nav-actions {
-      width: 100%;
-      justify-content: space-between;
-      gap: 10px;
-      padding-bottom: 4px;
+      width: auto;
+      justify-content: flex-end;
       height: auto;
+      gap: 0;
    }
 
-   .nav-home {
+   .nav-links-desktop {
+      display: none;
+   }
+
+   .mobile-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+   }
+
+   .mobile-nav-toggle {
+      /* 汉堡按钮本体：固定尺寸，和主题开关并排显示。 */
+      border: 1px solid var(--color-border-primary);
+      border-radius: 999px;
+      background: var(--color-bg-surface);
+      color: var(--text-color-primary);
+      width: 42px;
+      min-height: 32px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+   }
+
+   .hamburger {
+      /* 三横线图标容器：纵向排列 3 条线。 */
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 16px;
+   }
+
+   .hamburger span {
+      /* 单条横线：通过展开态旋转/隐藏形成关闭图标。 */
+      width: 100%;
+      height: 2px;
+      background: var(--text-color-primary);
+      border-radius: 2px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+   }
+
+   .hamburger-open span:nth-child(1) {
+      /* 第一条线下移并旋转。 */
+      transform: translateY(6px) rotate(45deg);
+   }
+
+   .hamburger-open span:nth-child(2) {
+      /* 中间线隐藏。 */
+      opacity: 0;
+   }
+
+   .hamburger-open span:nth-child(3) {
+      /* 第三条线上移并反向旋转。 */
+      transform: translateY(-6px) rotate(-45deg);
+   }
+
+   .mobile-nav-panel {
+      /* 折叠面板绝对定位悬浮在导航下方，不挤压页面正文。 */
+      display: flex;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 12px;
+      width: min(220px, calc(100% - 24px));
+      padding: 8px;
+      border: 1px solid var(--color-border-primary);
+      border-radius: 10px;
+      background: var(--color-bg-surface);
+      flex-direction: column;
+      gap: 6px;
+      box-sizing: border-box;
+      z-index: 1500;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+   }
+
+   .mobile-nav-item {
+      color: var(--interactive-text-rest);
       font-size: 0.95rem;
+      font-weight: var(--font-weight-medium);
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+   }
+
+   .mobile-nav-item:hover {
+      color: var(--interactive-text-active);
+      background: var(--color-bg-muted);
+   }
+
+   .mobile-nav-item.nav-home-active {
+      color: var(--interactive-text-active);
+      background: var(--color-bg-muted);
    }
 }
 
