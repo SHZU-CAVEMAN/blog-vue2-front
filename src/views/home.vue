@@ -314,6 +314,7 @@ export default {
     max-width: min(84vw, 320px);
     z-index: 1200;
     margin: 0;
+    bottom: 0;
     overflow-y: auto;
     transition: transform 0.24s ease;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
