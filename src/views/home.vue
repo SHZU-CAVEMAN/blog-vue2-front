@@ -306,7 +306,8 @@ export default {
   .right-side {
     /* 两侧栏变为固定浮层抽屉，不参与主内容文档流。 */
     position: fixed !important;
-    top: 0;
+    /* 抽屉高度 = 全屏减去导航栏，再留一点空隙。 */
+    top: calc(var(--mobile-nav-height, 80px) + 12px);
     bottom: 0;
     width: min(84vw, 320px);
     max-width: min(84vw, 320px);
@@ -317,6 +318,7 @@ export default {
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     background: var(--color-bg-surface);
     padding-top: 8px;
+    max-height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
   }
 
   /* 抽屉模式下覆盖左右栏组件内部 sticky，避免出现“悬浮”和顶部大空白。 */

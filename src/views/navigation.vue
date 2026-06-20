@@ -130,7 +130,10 @@ export default {
    mounted() {
       // 首次渲染时根据全局主题恢复开关状态。
       this.isNight = document.documentElement.getAttribute("data-theme") === "dark";
-   }
+
+      // 小屏导航高度保持固定，抽屉只需要在这个值基础上留出一点空隙即可。
+      document.documentElement.style.setProperty("--mobile-nav-height", "80px");
+   },
 };
 </script>
 

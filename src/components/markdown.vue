@@ -656,8 +656,8 @@ export default {
   width: 18%;
   margin-left: 0%;
   display: flex;
-  flex-direction: column;
-  position: absolute;
+    /* 让同类与目录始终显示在吸顶导航栏下方，并预留额外间距。 */
+    top: 88px;
   border: 1px solid var(--color-border-primary);
 
   padding: 3vh;
@@ -1081,12 +1081,13 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
   .catalog.outter {
     /* 左右侧栏统一为 fixed 浮层，避免跟随正文滚动。 */
     position: fixed !important;
-    top: 0;
+    /* 抽屉高度 = 全屏减去导航栏，再留一点空隙。 */
+    top: calc(var(--mobile-nav-height, 80px) + 12px);
     bottom: 0;
     margin: 0;
     width: min(84vw, 320px);
     max-width: min(84vw, 320px);
-    max-height: 100vh;
+    max-height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
     z-index: 1200;
     overflow-y: auto;
     box-sizing: border-box;
