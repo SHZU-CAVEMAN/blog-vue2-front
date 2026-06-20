@@ -314,7 +314,6 @@ export default {
     max-width: min(84vw, 320px);
     z-index: 1200;
     margin: 0;
-    bottom: 0;
     overflow-y: auto;
     transition: transform 0.24s ease;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
@@ -322,18 +321,18 @@ export default {
     padding-top: 8px;
   }
 
-  /* 抽屉模式下覆盖左右栏组件内部 sticky，避免出现“悬浮”和顶部大空白。 */
-  .left-side .left,
-  .left-side .outter,
-  .right-side .one,
-  .right-side .outter {
+  /* 抽屉模式下直接覆盖组件根节点自身的 sticky/outter，避免滚动后重新顶到导航下方。 */
+  .left-side.left,
+  .left-side.outter,
+  .right-side.one,
+  .right-side.outter {
     position: static !important;
     top: auto !important;
     bottom: auto !important;
     height: auto !important;
   }
 
-  .left-side .left {
+  .left-side.left {
     /* 左侧分类内部允许独立滚动。 */
     overflow-y: auto;
     max-height: 100%;
