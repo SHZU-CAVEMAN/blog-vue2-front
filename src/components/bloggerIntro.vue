@@ -26,7 +26,7 @@
 
       <br />
       <h5 class="name">Liao</h5>
-      <div class="motto">欢迎光临</div>
+      <div class="motto">欢迎驻足</div>
     </div>
 
     <hr style="margin-left: 5%; margin-bottom: 0; width: 90%" />
@@ -151,11 +151,42 @@ export default {
   display: inline-block;
   margin-top: 0.25rem;
   padding: 0.125rem 0.5rem;
-  color: dimgrey;
+  color: rgb(0, 0, 0);
   background-color: #f4f5f7;
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
+  border: 1px solid rgb(136, 138, 141);
   border-radius: 999px;
+  transform-origin: center;
+  animation: motto-shake 2.6s ease-in-out infinite;
+}
+
+@keyframes motto-shake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-4deg);
+  }
+  30% {
+    transform: rotate(4deg);
+  }
+  45% {
+    transform: rotate(-3deg);
+  }
+  60% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-1.5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motto {
+    animation: none;
+  }
 }
 
 .social-icon {

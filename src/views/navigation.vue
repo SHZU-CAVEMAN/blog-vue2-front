@@ -20,6 +20,14 @@
             <div :class="{ 'nav-home-active': isFriendsActive }" class="nav-item nav-home" @click="jumpFriends">
                友链
             </div>
+
+            <!-- 日夜开关：容器和滑块都根据 isNight 切换对应样式。 -->
+            <div :class="{ 'theme-toggle-night': isNight }" class="theme-toggle" @click="toggleTheme">
+               <span class="toggle-icon toggle-sun">☀</span>
+               <span class="toggle-icon toggle-moon">☾</span>
+               <!-- 滑块根据 isNight 切换位置 ：-->
+               <span :class="{ 'toggle-knob-night': isNight }" class="toggle-knob"></span>
+            </div>
          </div>
 
          <!-- 移动端控制区：折叠按钮与主题切换并排显示。 -->
