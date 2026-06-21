@@ -705,7 +705,7 @@ export default {
   width: 60%;
   margin-left: 20%;
   margin-top: 2vh;
-  
+
   color: black;
   background-color: var(--color-bg-surface);
   border-radius: 1vh;
@@ -1081,7 +1081,8 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
     top: calc(var(--mobile-nav-height, 80px) + 12px);
     bottom: 0;
     margin: 0;
-    width: min(84vw, 320px);
+    width: 70vw;
+    max-width: 320px;
     max-width: min(84vw, 320px);
     max-height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
     z-index: 1200;
