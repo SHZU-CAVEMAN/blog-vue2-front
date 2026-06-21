@@ -3,7 +3,7 @@
   <div class="articles">
     <!-- 文章卡片列表 -->
     <div v-for="article in temp" :key="article.id" v-slide-in>
-      <article-latest :article="article"></article-latest>
+      <ArticleCard :article="article"></ArticleCard>
     </div>
     <!-- 分页器 -->
     <div class="pagination">
@@ -21,13 +21,13 @@
 </template>
 
 <script>
-import articleLatest from "./article.vue";
+import ArticleCard  from "./article.vue";
 import Footer from "../views/footer.vue";
 
 export default {
   name: "articlesComponent",
   components: {
-    articleLatest,
+    ArticleCard,
     Footer,
   },
   computed: {
@@ -96,9 +96,6 @@ export default {
 <style scoped>
 .articles {
   background-color: var(--color-bg-page);
-  width: 100%;
-  margin-top: 2%;
-  z-index: 2;  /* ? */
   box-sizing: border-box;
 }
 .pagination {

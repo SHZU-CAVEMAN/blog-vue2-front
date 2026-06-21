@@ -78,10 +78,10 @@ export default {
 <style scoped>
 .notice {
   background-color: #ffffff;
-  width: 95%;
+  width: 100%;
   height: auto;
   padding: 5%;
-  border-radius: 10px;
+  border-radius: 5px;
   /*box-shadow: 0px 4px 6px 2px rgb(223, 223, 223); */
   border: 1px solid rgb(208, 215, 222);
 }

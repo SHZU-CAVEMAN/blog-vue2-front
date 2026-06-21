@@ -84,12 +84,7 @@ export default {
 <style scoped>
 .article {
   background-color: #ffffff;
-  width: 96%;
-  /* height: 230px; */
-  /* height: 200px; */
-
   margin-bottom: 3%;
-  margin-left: 2%;
   border-radius: 10px;
   /* box-shadow: 0px 0px 0px 1px rgb(194, 194, 194); */
   border: 1px solid rgb(180, 181, 183);

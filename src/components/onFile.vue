@@ -127,27 +127,19 @@ export default {
 
 <style>
 .onFile {
-  width: 100%;
-  margin-left: 0;
-  margin-top: 3.5vh;
+  margin-top: 2vh;
   box-sizing: border-box;
-  /* margin-bottom:5vh; */
+
 }
 
 #articleListCate {
-  /* position: relative; */
+
   background-color: var(--color-bg-surface);
   display: inline-block;
   vertical-align: top;
-  margin-left: 2%;
-
-  width: 96%;
+  width: 100%;
+  min-height: calc(100vh - 35vh);
   border-radius: 10px;
-  /* padding-top: 0%; */
-  /* margin-top:6% */
-  /* 不设置高度，高度就自适应了 */
-  /* max-height: 1400px; */
-  /* box-shadow: 0px 4px 6px 2px rgb(223, 223, 223); */
   border: 1px solid var(--color-border-primary);
 }
 
@@ -200,6 +192,12 @@ export default {
   background-color: var(--color-bg-surface);
   color: var(--interactive-text-active);
   font-weight: 550;
+}
+
+@media (max-width: 1200px) {
+  #articleListCate {
+    min-height: calc(100vh - var(--mobile-nav-height, 80px) - 180px);
+  }
 }
 
 </style>

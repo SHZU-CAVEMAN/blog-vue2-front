@@ -8,7 +8,11 @@
 
     <div class="home-layout">
       <!-- 左侧：分类汇总-->
-      <left :articleInfo="articleInfo" class="sidebar left-side" :class="{ 'drawer-open': isLeftDrawerOpen }" />
+      <div
+        v-bind:class="{ 'left-panel': true, outter: outter, 'drawer-open': isLeftDrawerOpen }"
+      >
+        <category :articleInfo="articleInfo" />
+      </div>
 
       <!-- 中间主体：articles和 onFile 两个组件接收 articleInfo数据 -->
       <keep-alive>
@@ -16,20 +20,27 @@
       </keep-alive>
 
       <!-- 右侧：公告信息和博主卡片 -->
-      <right class="sidebar right-side" :class="{ 'drawer-open': isRightDrawerOpen }" />
+      <div
+        v-bind:class="{ 'right-panel': true, outter: outter, 'drawer-open': isRightDrawerOpen }"
+      >
+        <notice/>
+        <blogger-intro  style="margin-top:2vh"/>
+      </div>
     </div>
 
   </div>
 </template>
 
 <script>
-import right from './right.vue';
-import left from './left.vue';
+import category from '../components/category.vue';
+import bloggerIntro from '../components/bloggerIntro.vue';
+import notice from '../components/notice.vue';
 export default {
   name: "homeComponent",
   components: { 
-    left,
-    right,
+    category,
+    bloggerIntro,
+    notice,
   },
   data() {
     return {
@@ -40,6 +51,8 @@ export default {
       isLeftDrawerOpen: false,
       // 右抽屉（公告/博主）开关状态。
       isRightDrawerOpen: false,
+      // 侧栏吸顶阈值状态（与 markdown 的 outter 逻辑一致）。
+      outter: false,
       // 手势起点坐标，用于判定横向滑动方向和距离。
       touchStartX: 0,
       touchStartY: 0,
@@ -71,10 +84,7 @@ export default {
   methods: {
     // ...mapActions(["setArticleInfo",]),
     EventHandler(name) {
-      //console.log("home组件", name);
       this.cateNameFlag = name;
-      //点击了分类,则 cateNameFlag不为空,则显示ArticleListCate组件
-      //否则显示 ArticleListNew组件
     },
     getIP() {
       //1 查询ip地址
@@ -179,24 +189,19 @@ export default {
       if (this.isRightDrawerOpen && deltaX > 0) {
         this.closeDrawers();
       }
+    },
+    // 监听滚动事件，根据滚动距离切换 侧栏 吸顶状态。
+    handleSidebarScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      this.outter = scrollTop > 60;
     }
   },
-  created() {
-    //使用原生fetch获取ip
-    // fetch('https://api.ipify.org?format=json')
-    //   .then(response => response.json())
-    //   .then(data => console.log('哈哈哈哈哈哈哈哈哈哈啊哈哈',data));
-
-    // 使用原生xhr获取ip
-    // this.getIP();
-
-    // 在这里请求articleInfo的数据，并存放在store中。
-    // home组件是父组件，articleList组件是子组件。
-    // 异步请求的结果在父组件的 beforeUpdate阶段可以获取，
-    // 算了。
-    // this.$bus.$on("cateEvent", this.EventHandler);
+  mounted() {
+    window.addEventListener('scroll', this.handleSidebarScroll);
   },
   beforeDestroy() {
+    // 移除滚动监听，恢复默认滚动行为。
+    window.removeEventListener('scroll', this.handleSidebarScroll);
     if (typeof document !== 'undefined') {
       document.body.style.overflow = '';
     }
@@ -208,32 +213,62 @@ export default {
 #home {
   background-color: var(--color-bg-page);
 }
-
+ 
 .home-layout {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2%;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 2% 0 0;
+  margin-top: 0;
 }
 
-.sidebar {
-  flex: 0 0 20%;
-  max-width: 20%;
+.left-panel::-webkit-scrollbar {
+  width: 0 !important;
+}
+
+.left-panel {
+  background-color: var(--color-bg-surface);
+  height: calc(100vh - 10vh);
+  box-sizing: border-box;
+  bottom: 0;
+  border: 1px solid var(--color-border-primary);
+  position: fixed;
+  width: 19%;
+  left: 0;
+  top: 10vh;
+  overflow-y: scroll;
+}
+
+.right-panel {
+  position: fixed;
+  right: 0;
+  margin-top: 2vh;
+  width: 20%;
+  min-height: 10vh;
+  max-height: calc(100vh - 12vh);
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 1%;
+
 }
 
 .main-content {
-  flex: 1 1 auto;
+  width: 60%;
+  margin-left: 20%;
+  margin-top: 2vh;
   min-width: 0;
 }
 
-.one {
-  width: 20%;
-  /* background-color: rgb(255, 255, 255); */
+/* 仅限桌面端，侧栏切换到 outter 吸顶态。 移动端不能吸顶，否则会被导航栏遮挡*/
+@media (min-width: 1201px) {
+  .left-panel.outter {
+    top: 0;
+    height: 100vh;
+  }
 
+  .right-panel.outter {
+    top: 2vh;
+    max-height: calc(100vh - 4vh);
+  }
 }
+
 
 /* 默认隐藏移动端抽屉入口与遮罩，仅在断点内启用。 */
 .drawer-handle,
@@ -255,7 +290,9 @@ export default {
     min-width: 0;
     position: relative;
     z-index: 1;
-    margin-top: 0;
+    margin-top: 2vh;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .main-content .articles {
@@ -302,16 +339,16 @@ export default {
     backdrop-filter: blur(2px);
   }
 
-  .left-side,
-  .right-side {
+  .left-panel,
+  .right-panel {
     /* 两侧栏变为固定浮层抽屉，不参与主内容文档流。 */
     position: fixed !important;
     /* 抽屉高度 = 全屏减去导航栏，再留一点空隙。 */
     top: calc(var(--mobile-nav-height, 80px) + 12px);
     /* 用显式高度锁定到底部，避免 top/bottom/max-height 叠加导致底部悬空。 */
     height: calc(100vh - (var(--mobile-nav-height, 80px) + 12px));
-    width: min(84vw, 320px);
-    max-width: min(84vw, 320px);
+    width: 70vw;
+    max-width: 320px;
     z-index: 1200;
     margin: 0;
     bottom: 0;
@@ -322,59 +359,25 @@ export default {
     padding-top: 8px;
   }
 
-  /* 抽屉模式下覆盖左右栏组件内部 sticky，避免出现“悬浮”和顶部大空白。 */
-  .left-side .left,
-  .left-side .outter,
-  .right-side .one,
-  .right-side .outter {
-    position: static !important;
-    top: auto !important;
-    bottom: auto !important;
-    height: auto !important;
-  }
-
-  .left-side .left {
-    /* 左侧分类内部允许独立滚动。 */
-    overflow-y: auto;
-    max-height: 100%;
-  }
-
-  .right-side .notice,
-  .right-side .blogger-intro {
-    /* 右抽屉内部卡片统一留白，避免贴边。 */
-    margin: 10px 12px !important;
-  }
-
-  .left-side {
-    order: 2;
+  .left-panel {
+    /* 左抽屉默认从左侧屏外滑入。 */
     left: 0;
-    /* 初始隐藏在屏幕左侧外。 */
     transform: translateX(-104%);
   }
 
-  .right-side {
-    order: 3;
+  .right-panel {
+    /* 右抽屉默认从右侧屏外滑入。 */
     right: 0;
-    /* 初始隐藏在屏幕右侧外。 */
     transform: translateX(104%);
   }
 
-  .left-side.drawer-open,
-  .right-side.drawer-open {
-    /* 打开抽屉时滑入可视区。 */
+  .left-panel.drawer-open,
+  .right-panel.drawer-open {
+    /* 打开时直接滑入可视区。 */
     transform: translateX(0);
   }
+
 }
 
-@media (max-width: 576px) {
-  .home-layout {
-    /* 超小屏继续压缩容器左右留白。 */
-    padding: 0 8px;
-  }
 
-  .main-content {
-    /* 轻微上移主内容，减少导航下方视觉空隙。 */
-    margin-top: 4px;
-  }
-}
 </style>

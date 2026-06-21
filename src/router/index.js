@@ -27,26 +27,6 @@ const routes = [
         ]
 
     },
-    //关于
-    /*
-    {
-        path:'/about',
-        name:"aboutComponent",
-        component:()=>import('../components/unUse/about.vue'),
-
-    },
-    */
-    // 编辑板
-    /*
-    {
-        path: '/mdEditor',
-        name: 'mdEditorComponent',
-        component: () => import('../components/unUse/mdEditor.vue'),
-        meta: {
-            requireAuth: true // 编辑板 需要验证是否登录
-        }
-    },
-    */
     // 文章展示
     {
         path: '/articleView/:id/:name',
@@ -59,24 +39,12 @@ const routes = [
         },
         component: () => import('../components/articleView.vue')
     },
+    // 友情链接
     {
         path:'/friends',
         name:'friendsComponent',
         component:()=>import('../components/friends.vue')
     },
-    /*
-    {
-        path:'/statistics',
-        name:'statisticsComponent',
-        component:()=>import('../components/statistics.vue')
-    },
-    
-    {
-        path:'/messageBoard',
-        name:'messageBoardComponent',
-        component:()=>import('../components/messageBoard.vue')
-    }
-        */
 
 ]
 const route = new Router({

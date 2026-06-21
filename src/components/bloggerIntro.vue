@@ -116,9 +116,9 @@ export default {
   display: inline-block;
 
   background-color: #ffffff;
-  width: 95%;
+  width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 5px;
   border: 1px solid rgb(208, 215, 222);
 }
 

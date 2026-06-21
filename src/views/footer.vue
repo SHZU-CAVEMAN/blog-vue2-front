@@ -24,8 +24,7 @@ export default {
 .footer {
   background-color: var(--color-bg-surface);
   color: var(--text-color-primary);
-  width: 96%;
-  margin-left: 2%;
+  width: 100%;
   margin-top: 0vh;
   border:1px solid var(--color-border-primary);
   border-radius: 10px;

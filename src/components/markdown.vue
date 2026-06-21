@@ -7,7 +7,7 @@
     <div v-if="isAnyDrawerOpen" class="drawer-mask" @click="closeDrawers"></div>
 
     <!-- 左侧 ：当前分类 -->
-    <div v-bind:class="{ info_index: true, outter: outter, 'drawer-open': isLeftDrawerOpen }">
+    <div v-bind:class="{ 'info_index': true, 'outter': outter, 'drawer-open': isLeftDrawerOpen }">
       <div style="">
         <div style="
             font-size: 0.9rem;
@@ -32,8 +32,9 @@
 
     </div>
 
-    <!-- 文章正文 -->
-    <div v-bind:class="{ body: true, body_add: titles.length == 0 }">
+    <!-- 文章主体 -->
+    <div v-bind:class="{ 'body': true }">
+      <!-- 头部：标题，小字信息 -->
       <div class="title">
         {{ name }}
       </div>
@@ -44,8 +45,6 @@
       <hr style="margin-top: 1vh" />
       <!-- 正文 -->
       <v-md-preview :text="text" ref="preview" style="" />
-   
-      <hr v-if="publish_time" />
       <!-- 尾部 ：上一篇/下一篇-->
       <div v-if="publish_time" class="prev-next-wrap">
         <h1 class="prev-next-item" @click="jumpFormer(formerId, former)">
@@ -62,7 +61,7 @@
     </div>
 
     <!-- 文章目录 -->
-    <div :class="{ catalog: true, outter: outter, 'drawer-open': isRightDrawerOpen }">
+    <div :class="{ 'catalog': true, 'outter': outter, 'drawer-open': isRightDrawerOpen }">
       <div class="el-icon-tickets catalog-head">
         <a-icon type="container" />
         <a style="margin-bottom: 2px; margin-left: 2vh"> 目录</a>
@@ -653,17 +652,15 @@ export default {
 
 .info_index {
   /* 左侧“当前分类”浮层：随滚动切换 fixed，并保持独立滚动区域。 */
-  width: 18%;
+  position: fixed;
+  width: 19%;
   margin-left: 0%;
   display: flex;
-    /* 让同类与目录始终显示在吸顶导航栏下方，并预留额外间距。 */
-    top: 88px;
-  border: 1px solid var(--color-border-primary);
-
-  padding: 3vh;
-
+  /* 初始态就固定在导航下方，避免正文左侧被重复留白。 */
   top: 10vh;
   bottom: 0;
+  border: 1px solid var(--color-border-primary);
+  padding: 3vh;
   background-color: var(--color-bg-surface);
   overflow-y: scroll;
 }
@@ -705,12 +702,12 @@ export default {
 
 /* 文章主体样式 */
 .body {
-  background-color: var(--color-bg-surface);
-  /* background-color: #EFF2F5; */
   width: 60%;
   margin-left: 20%;
   margin-top: 2vh;
+  
   color: black;
+  background-color: var(--color-bg-surface);
   border-radius: 1vh;
   border: 1px solid var(--color-border-primary);
 }
@@ -733,8 +730,7 @@ h1:hover a {
   right: 1%;
   margin-left: 0;
   margin-top: 2vh;
-  background-color: var(--color-bg-muted);
-  /* background-color: #ffffff; */
+  background-color: var(--color-bg-muted); 
   overflow: hidden;
   width: 18%;
   min-height: 10vh;
