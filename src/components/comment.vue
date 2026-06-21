@@ -287,8 +287,9 @@ img {
 /* 平板/小屏：评论容器切换到全宽，层级缩进收窄。 */
 @media (max-width: 1200px) {
     .comment {
-        width: 100%;
-        margin-left: 0;
+        width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
         margin-top: 12px;
         border-radius: 8px;
         padding: 12px;
