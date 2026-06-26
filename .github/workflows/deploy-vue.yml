@@ -1,7 +1,7 @@
 name: Deploy Vue Frontend
 on:
   push:
-    branches: [ main ] # 你代码主分支，改成master自行替换
+    branches: [ main ] # 代码主分支
   workflow_dispatch:
 jobs:
   build-and-deploy:

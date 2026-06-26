@@ -119,7 +119,7 @@ export default {
             name: "articleViewComponent",
             params: {
                id: "114",
-               name: "blogger",
+               name: "小站简介",
             },
          });
          this.mobileNavOpen = false;
