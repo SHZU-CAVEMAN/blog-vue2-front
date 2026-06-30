@@ -50,26 +50,52 @@ export default {
     };
   },
   watch: {
-    //监听name，这样name有变化时才能触发响应式更新。否则只能在url中看到变化，不会更新组件。
-    "name": {
-      handler(newVal) {
-        // console.log("onFile!!!",newVal)
-        if (newVal == 'total') {
-          this.cateArticle = this.articleInfo;
-          return;
-        }
-        
-        this.cateName = newVal;
-        this.cateArticle = [];
-        for (var i = 0; i < this.articleInfo.length; i++) {
-          if (this.articleInfo[i].category.name == newVal) {
-            this.cateArticle.push(this.articleInfo[i]); //分类后的文章信息存在cache中
-          }
-        }
-      }
-    }
+    // 监听分类名与文章数据：路由刷新后文章异步到达时也会重新筛选。
+    name: {
+      handler() {
+        this.applyCategoryFilter();
+      },
+      immediate: true,
+    },
+    articleInfo: {
+      handler() {
+        this.applyCategoryFilter();
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   methods: {
+    applyCategoryFilter() {
+      const list = Array.isArray(this.articleInfo) ? this.articleInfo : [];
+      const currentName = this.name || "";
+
+      if (currentName === "total") {
+        this.cateName = "";
+        this.cateArticle = list;
+        return;
+      }
+
+      this.cateName = currentName;
+      this.cateArticle = list.filter((item) => item.category && item.category.name === currentName);
+    },
+    ensureArticleData() {
+      const list = Array.isArray(this.articleInfo) ? this.articleInfo : [];
+      if (list.length > 0) return;
+
+      // 刷新分类页时，articles 组件不会创建，这里兜底拉取一次文章列表。
+      this.$api.article.getAll()
+        .then((res) => {
+          const all = ((res && res.data && res.data.data) || []).slice().reverse();
+          this.$store.dispatch("setArticle", all);
+        })
+        .catch((err) => {
+          console.error("分类页文章加载失败：", err.message || err, {
+            code: err.code,
+            status: err.status,
+          });
+        });
+    },
     // 作废弃用，监听name了，这个方法就没什么意义了。
     cateEventHandler(name) {
       console.log("articleListCate组件", name);
@@ -104,19 +130,7 @@ export default {
 
     // this.$bus.$on("cateEvent", this.cateEventHandler);//点击事件后不被触发 .再次点击才触发?
 
-    //以下是为了保证在初次加载时就分好类，因为wacth监听是在mounted之后执行了。
-    if (this.name == 'total') {
-      this.cateName = '';
-      this.cateArticle = this.articleInfo;
-    } else {
-      this.cateName = this.name;
-      this.cateArticle = [];
-      for (var i = 0; i < this.articleInfo.length; i++) {
-        if (this.articleInfo[i].category.name == this.name) {
-          this.cateArticle.push(this.articleInfo[i]); //分类后的文章信息存在 cateArticle 
-        }
-      }
-    }
+    this.ensureArticleData();
   },
   beforeDestroy() {
     this.$bus.off();
