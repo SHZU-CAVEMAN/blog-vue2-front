@@ -1,13 +1,41 @@
 <template>
   <div class="friends-page">
     <div class="friends-card">
-      <div class="friends-title">友情链接</div>
-      <!-- 按分类渲染友链，每组独立展示标题和卡片列表 -->
-      <div v-for="group in friendsCategories" :key="group.category" class="friends-group">
-        <div class="friends-category-title">{{ group.category }}</div>
-        <div v-if="group.sites.length" class="friends-grid">
+      <div class="friends-toolbar">
+        <div v-if="friendsCategories.length" class="friends-category-tabs">
+          <button
+            type="button"
+            class="friends-tab"
+            :class="{ 'friends-tab-active': activeCategory === ALL_CATEGORY_KEY }"
+            @click="switchCategory(ALL_CATEGORY_KEY)"
+          >
+            <span>全部</span>
+            <span class="friends-tab-count">{{ allSitesCount }}</span>
+          </button>
+
+          <button
+            v-for="group in friendsCategories"
+            :key="group.category"
+            type="button"
+            class="friends-tab"
+            :class="{ 'friends-tab-active': activeCategory === group.category }"
+            @click="switchCategory(group.category)"
+          >
+            <span>{{ group.category }}</span>
+            <span class="friends-tab-count">{{ group.sites.length }}</span>
+          </button>
+        </div>
+
+        <div class="friends-actions">
+          <common-button class="friends-apply-btn" variant="primary" @click="openApplyModal">+ 友链申请</common-button>
+        </div>
+      </div>
+
+      <div v-if="currentGroup" class="friends-group">
+        <div class="friends-category-title">{{ currentGroup.category }}</div>
+        <div v-if="displayedSites.length" class="friends-grid">
           <a
-            v-for="site in group.sites"
+            v-for="site in displayedSites"
             :key="site.url"
             :href="site.url"
             target="_blank"
@@ -24,7 +52,51 @@
         </div>
         <div v-else class="friends-empty">暂无链接，敬请期待</div>
       </div>
+
+      <div v-else class="friends-empty">暂无链接，敬请期待</div>
     </div>
+
+    <common-modal
+      v-model="applyModalVisible"
+      title="提交友链申请"
+      ok-text="提交申请"
+      cancel-text="取消"
+      :confirm-loading="submittingApply"
+      @ok="submitApply"
+      @cancel="handleApplyCancel"
+    >
+      <div class="apply-form">
+        <label class="apply-label" for="friend-name">网站名称</label>
+        <input
+          id="friend-name"
+          v-model.trim="applyForm.name"
+          class="apply-input"
+          type="text"
+          maxlength="60"
+          placeholder="请输入网站名称"
+        />
+
+        <label class="apply-label" for="friend-url">网站链接</label>
+        <input
+          id="friend-url"
+          v-model.trim="applyForm.url"
+          class="apply-input"
+          type="text"
+          maxlength="255"
+          placeholder="https://example.com"
+        />
+
+        <label class="apply-label" for="friend-description">网站说明</label>
+        <textarea
+          id="friend-description"
+          v-model.trim="applyForm.description"
+          class="apply-textarea"
+          rows="4"
+          maxlength="300"
+          placeholder="请简要介绍一下你的网站内容"
+        ></textarea>
+      </div>
+    </common-modal>
   </div>
 </template>
 
@@ -32,12 +104,129 @@
 export default {
   name: "friendsComponent",
   data() {
+    const ALL_CATEGORY_KEY = "__all__";
     return {
+      ALL_CATEGORY_KEY,
       // 友链数据改为后端驱动：页面只做渲染与分组。
       friendsCategories: [],
+      activeCategory: ALL_CATEGORY_KEY,
+      applyModalVisible: false,
+      submittingApply: false,
+      applyForm: {
+        name: "",
+        url: "",
+        description: "",
+      },
     };
   },
+  computed: {
+    allSites() {
+      return this.friendsCategories.reduce((acc, group) => {
+        if (Array.isArray(group.sites)) {
+          return acc.concat(group.sites);
+        }
+        return acc;
+      }, []);
+    },
+    allSitesCount() {
+      return this.allSites.length;
+    },
+    currentGroup() {
+      if (!this.friendsCategories.length) return null;
+
+      if (this.activeCategory === this.ALL_CATEGORY_KEY) {
+        return {
+          category: "全部",
+          sites: this.allSites,
+        };
+      }
+
+      const current = this.friendsCategories.find((group) => group.category === this.activeCategory);
+      return current || this.friendsCategories[0];
+    },
+    displayedSites() {
+      return this.currentGroup ? this.currentGroup.sites : [];
+    },
+  },
   methods: {
+    openApplyModal() {
+      this.applyModalVisible = true;
+    },
+    handleApplyCancel() {
+      this.applyModalVisible = false;
+    },
+    resetApplyForm() {
+      this.applyForm = {
+        name: "",
+        url: "",
+        description: "",
+      };
+    },
+    normalizeUrl(rawUrl) {
+      const input = (rawUrl || "").trim();
+      if (!input) return "";
+      if (/^https?:\/\//i.test(input)) return input;
+      return `https://${input}`;
+    },
+    validateApplyForm() {
+      if (!this.applyForm.name) {
+        this.$message.warning("请输入网站名称");
+        return false;
+      }
+      if (!this.applyForm.url) {
+        this.$message.warning("请输入网站链接");
+        return false;
+      }
+      if (!this.applyForm.description) {
+        this.$message.warning("请输入网站说明");
+        return false;
+      }
+
+      const normalizedUrl = this.normalizeUrl(this.applyForm.url);
+      try {
+        const parsedUrl = new URL(normalizedUrl);
+        if (!/^https?:$/i.test(parsedUrl.protocol)) {
+          this.$message.warning("链接仅支持 http 或 https");
+          return false;
+        }
+      } catch (error) {
+        this.$message.warning("请输入正确的网站链接");
+        return false;
+      }
+
+      this.applyForm.url = normalizedUrl;
+      return true;
+    },
+    submitApply() {
+      if (this.submittingApply) return;
+      if (!this.validateApplyForm()) return;
+
+      this.submittingApply = true;
+      // 提交申请到后端，后端会进行审核。
+      this.$api.friendlink.create({
+        name: this.applyForm.name,
+        url: this.applyForm.url,
+        description: this.applyForm.description,
+      })
+        .then(() => {
+          this.$message.success("申请已提交，感谢你的支持");
+          this.applyModalVisible = false;
+          this.resetApplyForm();
+          this.loadFriendlinks();
+        })
+        .catch((err) => {
+          if (this.$reportError) {
+            this.$reportError("friendlink-apply-submit-failed", err, {
+              module: "friends",
+              url: this.applyForm.url,
+            });
+          }
+          this.$message.error(err.message || "提交失败，请稍后重试");
+        })
+        .finally(() => {
+          this.submittingApply = false;
+        });
+    },
     // 兼容后端多种响应包裹格式，尽量提取出数组数据。
     resolveRowsFromResponse(res) {
       const payload = res && res.data !== undefined ? res.data : res;
@@ -109,6 +298,19 @@ export default {
         });
 
       this.friendsCategories = groups;
+      if (!groups.length) {
+        this.activeCategory = this.ALL_CATEGORY_KEY;
+        return;
+      }
+
+      const currentExists = this.activeCategory === this.ALL_CATEGORY_KEY
+        || groups.some((group) => group.category === this.activeCategory);
+      if (!currentExists) {
+        this.activeCategory = this.ALL_CATEGORY_KEY;
+      }
+    },
+    switchCategory(category) {
+      this.activeCategory = category;
     },
     loadFriendlinks() {
       this.$api.friendlink.getAll()
@@ -118,6 +320,7 @@ export default {
         })
         .catch((err) => {
           this.friendsCategories = [];
+          this.activeCategory = this.ALL_CATEGORY_KEY;
           if (this.$reportError) {
             this.$reportError("friendlink-list-fetch-failed", err, {
               module: "friends",
@@ -153,11 +356,106 @@ export default {
   box-sizing: border-box;
 }
 
-.friends-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-medium);
-  color: #24292f;
+.friends-actions {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.friends-toolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 14px;
+}
+
+.friends-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.friends-tab {
+  border: 1px solid var(--color-border-primary);
+  border-radius: 5px;
+  background-color: var(--color-bg-muted);
+  color: var(--interactive-text-rest);
+  padding: 6px 12px;
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.friends-tab:hover {
+  background-color: var(--color-bg-surface);
+  color: var(--interactive-text-active);
+}
+
+.friends-tab-active {
+  background-color: var(--color-bg-surface);
+  color: var(--interactive-text-active);
+  border-color: var(--interactive-text-active);
+}
+
+.friends-tab-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: #eaeef2;
+  color: #57606a;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.friends-tab-active .friends-tab-count {
+  background-color: #dff3ff;
+  color: var(--interactive-text-active);
+}
+
+.friends-apply-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.apply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.apply-label {
+  color: var(--text-color-secondary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+}
+
+.apply-input,
+.apply-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  background-color: var(--color-bg-surface);
+  color: var(--text-color-primary);
+}
+
+.apply-input:focus,
+.apply-textarea:focus {
+  border-color: var(--interactive-text-active);
+}
+
+.apply-textarea {
+  resize: vertical;
+  min-height: 90px;
 }
 
 /* 分类组容器，相邻组之间留出间距。 */
@@ -253,6 +551,14 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .friends-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .friends-actions {
+    margin-left: 0;
+  }
+
   .friends-grid {
     grid-template-columns: 1fr;
   }
