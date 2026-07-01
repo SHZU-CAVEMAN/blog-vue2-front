@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store';
 import VueLazyload from 'vue-lazyload';//图片懒加载
-import { Icon, BackTop, Pagination, Dropdown, Menu } from 'ant-design-vue';
+import { Icon, BackTop, Pagination, Dropdown, Menu, message } from 'ant-design-vue';
 import './assets/css/typography.css'; // 全局引入排版样式，保持文章内容的基本格式美观。
 import CommonComponents from './components/common';
 import vSlideIn from './tools/vSlideIn';
@@ -96,6 +96,7 @@ initializeTheme();
 // 全局注册请求实例和 API 对象，供组件/工具直接使用 this.$request / this.$api。
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
+Vue.prototype.$message = message;
 // 暴露静态资源根路径，供组件/工具在运行时拼接静态资源 URL。
 const staticOrigin = (process.env.VUE_APP_STATIC_ORIGIN || SERVICE_ORIGIN).replace(/\/+$/, '');
 Vue.prototype.$uploadFilesBase = `${staticOrigin}/uploadFiles/`;
