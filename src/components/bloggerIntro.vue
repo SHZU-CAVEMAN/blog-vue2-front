@@ -10,22 +10,24 @@
         3) 固定 width/height，减少布局抖动（CLS）。
       -->
       <picture>
-        <source :srcset="pictureAvifUrl" type="image/avif" />
-        <source :srcset="pictureWebpUrl" type="image/webp" />
+        <!-- <source :srcset="pictureAvifUrl" type="image/avif" />
+        <source :srcset="pictureWebpUrl" type="image/webp" /> -->
+        <!-- :src="pictureCompressedUrl" -->
         <img
           class="avatar"
-          :src="pictureCompressedUrl"
+          
+          src="../assets/zhuqing2.jpg"
           width="130"
           height="130"
           loading="lazy"
           decoding="async"
           alt="博主头像"
-          @error="handleAvatarError"
+     
         />
       </picture>
 
       <br />
-      <h5 class="name">Liao</h5>
+      <h5 class="name">Li ao</h5>
       <div class="motto">欢迎驻足</div>
     </div>
 
@@ -104,8 +106,6 @@ export default {
         img.src = this.localAvatarFallbackUrl;
         return;
       }
-
-      // 已进入最终兜底，不再继续切换地址，避免出现循环闪烁。
     },
   },
 };

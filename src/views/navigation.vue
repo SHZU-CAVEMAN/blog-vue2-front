@@ -1,6 +1,6 @@
 <template>
    <div class="navigation">
-      <img src="../assets/caveman.jpg" class="img" />
+      <img src="../assets/wangzhan.jpg" class="img" />
       <div class="brand-title">时髦的山顶洞人</div>
 
       <div class="nav-actions">
@@ -178,7 +178,7 @@ export default {
 .img {
    width: 8vh;
    height: 8vh;
-   border-radius: 50%;
+   /* border-radius: 50%; */
 }
 
 .nav-actions {
