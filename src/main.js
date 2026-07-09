@@ -132,7 +132,7 @@ router.beforeEach((to, from, next) => {
   ensureMarkdownRuntime()
     .then(() => next())
     .catch((error) => {
-      console.error('Markdown runtime load failed:', error);
+      Vue.prototype.$message.error('Markdown runtime load failed:', error);
       // 加载失败时先放行，避免导航重定向 Promise 被上层未捕获导致页面空白。
       // 后续可根据需要增加更平滑的降级提示。
       next();

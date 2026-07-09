@@ -3,15 +3,16 @@
     <div v-bind:class="{ comment: true }">
         <h5>{{ commentListByProps.length }} 条评论</h5>
 
-        <comment-edit :toWhich="toWhich" :toWhom="toWhom" :articleName="name"/>
+        <!-- 顶部编辑框固定发表一级评论。 -->
+        <comment-edit :parentId="null" :articleId="articleId"/>
 
         <hr style="margin:5vh 0 2vh 0" />
 
         <!-- 评论展示列表 （v-for） -->
         <div v-for="Acomment in commentListByProps" :key="Acomment.id" class="comment-row">
             <!-- 一级评论 -->
-            <!-- 如果toWhich无值，则-->
-            <div v-if="!Acomment.toWhich" class="comment_item">
+            <!-- parentId 为空表示一级评论。 -->
+            <div v-if="!Acomment.parentId" class="comment_item">
                 <img :src="avatarUrl(Acomment.avatar)" />
                 <div class="content">
                     <!-- <h6>{{ Acomment.nickname }}</h6> -->
@@ -19,10 +20,10 @@
                         {{ Acomment.nickname }}
                     </div>
 
-                    <v-md-editor v-model="Acomment.comment" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;border:0;height: auto;"/>
+                    <v-md-editor v-model="Acomment.content" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;border:0;height: auto;"/>
 
                     <div style="display: flex; align-items: center">
-                        {{ Acomment.time }}
+                        {{ Acomment.comment_time }}
                         <a href="https://www.baidu.com" target="_blank" class="ip">Changsha</a>
                         <!-- 点击出现评论框 -->
                         <div class="replyTo" @click="Replyto(Acomment.id, Acomment)">
@@ -32,7 +33,7 @@
                 </div>
                 <!-- 以下评论框点击则显示，再次点击则收回 -->
                 <div v-if="isShow && Acomment.id == isShowId" class="isCommentEdit">
-                    <comment-edit :toWhich="toWhich" :toWhom="toWhom" :articleName="name"/>
+                    <comment-edit :parentId="parentId" :articleId="articleId"/>
                 </div>
             </div>
 
@@ -40,7 +41,7 @@
             <!-- 遍历每个一级评论时，取出是否有相应的二级评论（再次遍历） -->
             <div v-for="Bcomment in commentListByProps" :key="Bcomment.id" class="child-comment-wrap">
 
-                <div v-if="Acomment.id == Bcomment.toWhich" class="comment_item">
+                <div v-if="Bcomment.id !== Acomment.id && Bcomment.rootParentId == Acomment.id" class="comment_item">
                     <img :src="avatarUrl(Bcomment.avatar)" />
                     <div class="content">
                         <div style="display: flex;align-items: center;">
@@ -50,15 +51,15 @@
                             <a-icon type="caret-right"
                                 style="font-size: 2.5vh;margin-left: 3vh;color:rgb(170, 170, 170);" />
                             <div class="content_name" style="margin-left: 3vh;">
-                                {{ Bcomment.toWhom }}
+                                {{ Bcomment.replyToNickname }}
                             </div>
                         </div>
 
-                        <v-md-editor v-model="Bcomment.comment" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;height:auto;border:0;"/>
+                        <v-md-editor v-model="Bcomment.content" mode="preview" class="comment-preview" style="font-size: 14px;margin-top: 1vh;height:auto;border:0;"/>
 
 
                         <div style="display: flex; align-items: center">
-                            {{ Bcomment.time }}
+                            {{ Bcomment.comment_time }}
                             <a href="https://www.baidu.com" target="_blank" class="ip">Hong Kong</a>
                             <div class="replyTo" @click="Replyto(Bcomment.id, Bcomment)">
                                 回复
@@ -67,7 +68,7 @@
                     </div>
                     <!-- 以下评论框点击则显示，再次点击则收回 -->
                     <div v-if="isShow && Bcomment.id == isShowId" class="isCommentEdit">
-                        <comment-edit :toWhich="toWhich" :toWhom="toWhom" :articleName="name"/>
+                        <comment-edit :parentId="parentId" :articleId="articleId"/>
                     </div>
                 </div>
 
@@ -88,8 +89,7 @@ export default {
     components: {
         commentEdit,
     },
-    // name为文章名
-    props: ["name"],
+    props: ["articleId"],
     computed: {
         // 评论数据统一从 Vuex 读取，避免和父组件 props 并存。
         allComments() {
@@ -102,14 +102,13 @@ export default {
             isShowId: 0,
          
             likeNumber: "", // 某条评论的点赞数量（此功能暂废弃 ————7.13）
-            commentListByProps: [],
+            commentListByProps: [], //当前文章的评论数据 
             // theme:'',
             isLike: false,
             isLikeId: "",
 
             flag: "",
-            toWhich: "", //从reply to中收集
-            toWhom: "", // 从reply to中收集
+            parentId: null,
 
         };
     },
@@ -121,24 +120,62 @@ export default {
             handler() {
                 // 每次变更都重新生成列表，避免 push 导致重复累积。
                 this.commentListByProps = this.getCurrentArticleComments();
-                console.log(this.commentListByProps);
             },
             deep: true,
             immediate: true,
         },
-        // 文章切换时也同步刷新评论列表。
-        name() {
+        articleId() {
+            // 当路由切换到不同文章时，重新过滤评论数据。
             this.commentListByProps = this.getCurrentArticleComments();
         },
     },
-    // */
     methods: {
         // 统一封装过滤逻辑，便于 watch/后续逻辑复用。
         getCurrentArticleComments() {
+
             if (!Array.isArray(this.allComments)) {
                 return [];
             }
-            return this.allComments.filter((item) => item.article == this.name);
+            
+            const currentArticleId = Number(this.articleId);
+            // 过滤出当前文章的评论（包括一级和二级），并按时间排序。
+            const comments = this.allComments
+                .filter((item) => Number(item.article_id) === currentArticleId);
+
+            // 如：nicknameById[101] 得到 "张三"
+            const nicknameById = comments.reduce((acc, item) => {
+                acc[item.id] = item.nickname;
+                return acc;
+            }, {});
+
+            // 如：parentById[101] 得到 100（父评论 id），如果是一级评论则为 null。
+            const parentById = comments.reduce((acc, item) => {
+                acc[item.id] = item.parentId || null;
+                return acc;
+            }, {});
+            
+            // 计算某条评论所属的一级评论 id，保证回复二级评论时仍展示在同一讨论串。
+            const getRootParentId = (id) => {
+                let currentId = id;
+                let parentId = parentById[currentId];
+                const visited = {};
+                // 防止循环引用导致死循环，记录已访问的评论 id。
+                while (parentId) {
+                    if (visited[parentId]) {
+                        break;
+                    }
+                    visited[parentId] = true;
+                    currentId = parentId;
+                    parentId = parentById[currentId];
+                }
+                return currentId;
+            };
+            
+            return comments.map((item) => ({
+                ...item,
+                rootParentId: getRootParentId(item.id),
+                replyToNickname: item.parentId ? (nicknameById[item.parentId] || "") : "",
+            }));
         },
         avatarUrl(fileName) {
             return this.$uploadFilesBase + fileName;
@@ -154,25 +191,14 @@ export default {
             this.isShowId = id;
             console.log(comment);
 
-            //设置当前评论（新评论） toWhich和 toWhom的值：
-            //如果 toWhich的值为null或者为空，说明是一级评论。id就是新评论的toWhich值。
-            if (comment.toWhich == null || comment.toWhich == "") {
-                this.toWhich = comment.id;
-                this.toWhom = comment.nickname;
-                // this.$store.dispatch('setToWhich',comment.id)
-                // this.$store.dispatch('setToWhom',comment.nickname)
-            } else {
-                //二级评论，则 toWhich 值相同。
-                this.toWhich = comment.toWhich;
-                this.toWhom = comment.nickname;
-                // this.$store.dispatch('setToWhich',comment.toWhich)
-                // this.$store.dispatch('setToWhom',comment.nickname)
-            }
+            // 精确回复：parentId 永远指向“当前点击的那条评论”。
+            this.parentId = comment.id;
         },
         // 总线关闭事件专用处理器：只负责收起编辑框。
         closeCommentEdit() {
             this.isShow = false;
             this.isShowId = 0;
+            this.parentId = null;
         },
 
     },

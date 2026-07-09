@@ -487,7 +487,6 @@ export default {
           // console.log('?',line)
           this.removeClass(line);
           const dom = document.getElementById(line);
-          console.log("hahahahahahah了", dom);
           //这个方法效果不太行：
           // console.log(this.$refs.catalog_scroll)
           dom.scrollIntoView({

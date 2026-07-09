@@ -6,8 +6,8 @@
       <keep-alive>
         <markdown :id="id" :name="name"></markdown>
       </keep-alive>
-      <!-- 文章评论 ：name为文章名-->
-      <comment :name="name"></comment>
+      <!-- 评论组件只依赖文章 id，避免展示层继续携带旧字段名。 -->
+      <comment :article-id="id"></comment>
     </template>
   </div>
 </template>
