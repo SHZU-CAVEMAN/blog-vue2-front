@@ -1,7 +1,7 @@
 <template>
    <div class="navigation">
       <img src="../assets/wangzhan.jpg" class="img" />
-      <div class="brand-title">时髦的山顶洞人</div>
+      <div class="brand-title">光羽</div>
 
       <div class="nav-actions">
          <!-- 桌面端导航项：移动端会折叠到下方抽屉面板。 -->
