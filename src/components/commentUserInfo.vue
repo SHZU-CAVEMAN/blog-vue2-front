@@ -67,7 +67,7 @@ export default {
 			email: "",
 			avatar: "",
 			verify: "",
-			verifyFromServe: "",
+			savedToken: "",
 			savedNickname: "",
 			savedEmail: "",
 			savedAvatar: "",
@@ -103,11 +103,7 @@ export default {
 				this.verifyMsg = "* 请填写验证码";
 				return;
 			}
-			if (val === this.verifyFromServe) {
-				this.verifyMsg = "√ 验证成功";
-			} else {
-				this.verifyMsg = "* 验证码错误";
-			}
+			this.verifyMsg = "";
 		},
 	},
 	methods: {
@@ -130,6 +126,7 @@ export default {
 			};
 			reader.readAsDataURL(file);
 		},
+		// 用户信息框 点击发送验证码 用于验证邮箱是否有效。
 		verifyPost() {
 			if (!this.checkEmail(this.email)) {
 				this.emailMsg = this.email ? "* 邮箱不合法" : "* 请输入邮箱";
@@ -140,29 +137,44 @@ export default {
 			this.savedEmail = this.email;
 			this.savedNickname = this.nickname;
 			this.savedAvatar = this.avatar;
-			this.verifyMsg = "";
-
-			this.$api.comment.sendVerifyEmail(this.email).then((res) => {
-				this.verifyFromServe = res.data.data;
+			this.savedToken = "";
+			this.verifyMsg = "* 请填写验证码";
+			// 发送验证码请求
+			this.$api.comment.sendVerifyEmail(this.email).then(() => {
+				this.$message.success("验证码已发送");
 			});
 		},
+		// 用户信息框 点击取消
 		handleCancel() {
 			this.innerVisible = false;
 			this.$bus.$emit("commentUserInfoShow", false);
 		},
+		// 用户信息框 点击提交 （返回token）
 		handleOk() {
-			const valid = this.nicknameMsg === "√" && this.emailMsg === "√" && this.verifyMsg === "√ 验证成功";
+			const valid = this.nicknameMsg === "√" && this.emailMsg === "√" && !!this.verify;
 			if (!valid) {
-				alert("请填写相关信息");
+				this.$message.warning("请填写并正确输入验证码");
 				return;
 			}
 
-			this.$bus.$emit("commentUserInfo", {
-				email: this.savedEmail,
-				nickname: this.savedNickname,
-				avatar: this.savedAvatar,
+			this.$api.comment.verifyEmailToken({
+				email: this.savedEmail || this.email,
+				verifyCode: this.verify,
+				nickname: this.savedNickname || this.nickname,
+				avatar: this.savedAvatar || this.avatar,
+			}).then((res) => {
+				const token = res.data.data.token;
+				if (!token) {
+					this.$message.warning("校验成功但未收到 token");
+					return;
+				}
+
+				this.savedToken = token;
+				this.$bus.$emit("commentUserInfo", {
+					token: this.savedToken,
+				});
+				this.handleCancel();
 			});
-			this.handleCancel();
 		},
 	},
 };

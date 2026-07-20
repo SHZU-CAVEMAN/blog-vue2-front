@@ -22,6 +22,9 @@ const api = {
     sendVerifyEmail(email) {
       return request.post("/verify/email", { email });
     },
+    verifyEmailToken(data) {
+      return request.post("/verify/email", data);
+    },
     uploadAvatar(formData) {
       return request.post("/upload-single-file", formData);
     },

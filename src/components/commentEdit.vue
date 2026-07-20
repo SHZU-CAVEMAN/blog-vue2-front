@@ -1,9 +1,9 @@
 <template>
     <!--评论编辑按钮-->
     <div>
-        <!-- 编辑评论时要进行信息验证 -->
+        <!-- 无 token 时，先补充昵称/邮箱并验证。 -->
         <comment-user-info v-if="visible" :comment="comment" />
-            
+
         <!-- 评论辑主要界面 -->
         <v-md-editor v-model="comment" :autofocus='autofocus' left-toolbar="undo | image  emoji" :disabled-menus="[]"
             placeholder="欢迎评论（评论框右上角可开启预览）" mode="edit" right-toolbar="preview" @upload-image="handleUploadImage" class="editor" />
@@ -29,26 +29,15 @@ import commentUserInfo from './commentUserInfo.vue';
 export default {
     name: "commentEditComponent",
     components: {
-        commentUserInfo
+        commentUserInfo,
     },
     props: ["parentId", "articleId"],
     data() {
         return {
             comment: "", //评论框收集
-            nickname: "", //评论框收集
-            email: "", //评论框收集
-            avatar: "", // 系统随机分配
-
             visible: false,
             autofocus: true,
         }
-    },
-    watch: {
-        visible: {
-            handler() {
-                return this.$store.state.comment.isVisible;
-            },
-        },
     },
     methods: {
         handleUploadImage(event, insertImage) {
@@ -66,39 +55,41 @@ export default {
             // 收起当前回复编辑框（由评论列表组件监听关闭）。
             this.$bus.$emit("closeCommentEdit") //不传值
         },
+        // 显示用户信息输入框（commentUserInfo.vue）
         show(data) {
-            //关闭邮箱验证组件commentUserInfo
             this.visible = data;
         },
+        // 接收用户信息输入框 （commentUserInfo.vue） 提交的结果
         info(data) {
-            this.email = data.email;
-            this.nickname = data.nickname;
-            this.avatar = data.avatar;
-            // console.log("已接收来自子组件的数据", this.email, this.nickname, this.avatar);
-            //提交最终的评论数据
+            // 1. 如果没有 token，说明邮箱验证未完成，提示用户先完成验证。
+            const token = data && data.token ? data.token : "";
+            if (!token) {
+                this.$message.warning("邮箱验证未完成，请先完成验证");
+                return;
+            }
+            localStorage.setItem("token", token);
             this.commitComment();
         },
         commitComment() {
-            if (this.avatar == '') {
-                this.avatar = Math.floor(Math.random() * 9 + 1)+'.jpg';
-            }
             // 提交评论：合并用户信息、评论内容、文章上下文后发送。
             const numericArticleId = Number(this.articleId);
             const parentId = this.parentId ? Number(this.parentId) : null;
+            const token = localStorage.getItem("token");
+            if (!token) {
+                this.$message.warning("请先完成邮箱验证");
+                this.visible = true;
+                return;
+            }
 
             this.$api.comment.add({
                 articleId: Number.isNaN(numericArticleId) ? this.articleId : numericArticleId,
                 parentId: Number.isNaN(parentId) ? null : parentId,
-                nickname: this.nickname,
-                avatar: this.avatar,
-                email: this.email,
                 content: this.comment,
             }).then(() => {
-                //console.log("提交评论成功");
                 this.$message.success("提交评论成功");
                 // 评论提交成功后通知根组件刷新评论列表，保证当前页面实时可见。
                 this.$bus.$emit("commentAdded");
-                // 重置编辑器内容并关闭信息弹窗，避免重复提交旧内容。
+                // 重置编辑器内容，避免重复提交旧内容。
                 this.comment = "";
                 this.visible = false;
             }).catch((err) => {
@@ -112,23 +103,26 @@ export default {
             });
         },
         commit() {
-            //1 若是初次登录，则进入commentUserInfo组件，在commentUserInfo组件中填写信息并提交评论。
+            //1 先判断评论内容。
             if(this.comment == ''){
                 this.$message.warning("评论不能为空");
-            }else{
+                return;
+            }
+
+            //2 有 token 直接提交；无 token 先弹信息框。
+            const token = localStorage.getItem("token");
+            if (token) {
+                this.commitComment();
+            } else {
                 this.visible = true;
             }
-            //2 todo：若本地存储已有游客信息，则取出身份信息后直接提交评论。
 
         },
 
     },
     created() {
-        // console.log('commitEdit', this.parentId, this.articleId)
-        // 之前执行两遍，这下又好了。
-        this.$bus.$on("commentUserInfoShow", this.show)
-        //接收子组件的nickname和email数据
-        this.$bus.$on("commentUserInfo", this.info)
+        this.$bus.$on("commentUserInfoShow", this.show);
+        this.$bus.$on("commentUserInfo", this.info); //
     },
     beforeDestroy() {
         this.$bus.$off("commentUserInfoShow", this.show);
