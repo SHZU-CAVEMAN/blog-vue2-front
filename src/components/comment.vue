@@ -3,7 +3,7 @@
     <div v-bind:class="{ comment: true }">
         <h5>{{ commentListByProps.length }} 条评论</h5>
 
-        <!-- 顶部编辑框固定发表一级评论。 -->
+        <!-- 顶部编辑框固定 -->
         <comment-edit :parentId="null" :articleId="articleId"/>
 
         <hr style="margin:5vh 0 2vh 0" />
@@ -15,7 +15,6 @@
             <div v-if="!Acomment.parentId" class="comment_item">
                 <img :src="avatarUrl(Acomment.avatar)" />
                 <div class="content">
-                    <!-- <h6>{{ Acomment.nickname }}</h6> -->
                     <div class="content_name">
                         {{ Acomment.nickname }}
                     </div>
@@ -26,7 +25,7 @@
                         {{ Acomment.comment_time }}
                         <a href="https://www.baidu.com" target="_blank" class="ip">Changsha</a>
                         <!-- 点击出现评论框 -->
-                        <div class="replyTo" @click="Replyto(Acomment.id, Acomment)">
+                        <div class="replyTo" @click="replyTo(Acomment.id, Acomment)">
                             回复
                         </div>
                     </div>
@@ -61,7 +60,7 @@
                         <div style="display: flex; align-items: center">
                             {{ Bcomment.comment_time }}
                             <a href="https://www.baidu.com" target="_blank" class="ip">Hong Kong</a>
-                            <div class="replyTo" @click="Replyto(Bcomment.id, Bcomment)">
+                            <div class="replyTo" @click="replyTo(Bcomment.id, Bcomment)">
                                 回复
                             </div>
                         </div>
@@ -148,9 +147,12 @@ export default {
                 return acc;
             }, {});
 
+            // 兼容不同命名方式，统一拿到父评论 id。
+            const normalizeParentId = (item) => item.parentId ?? item.parent_id ?? item.parentID ?? null;
+
             // 如：parentById[101] 得到 100（父评论 id），如果是一级评论则为 null。
             const parentById = comments.reduce((acc, item) => {
-                acc[item.id] = item.parentId || null;
+                acc[item.id] = normalizeParentId(item) || null;
                 return acc;
             }, {});
             
@@ -173,14 +175,15 @@ export default {
             
             return comments.map((item) => ({
                 ...item,
+                parentId: normalizeParentId(item),
                 rootParentId: getRootParentId(item.id),
-                replyToNickname: item.parentId ? (nicknameById[item.parentId] || "") : "",
+                replyToNickname: normalizeParentId(item) ? (nicknameById[normalizeParentId(item)] || "") : "",
             }));
         },
         avatarUrl(fileName) {
             return this.$uploadFilesBase + fileName;
         },
-        Replyto(id, comment) {
+        replyTo(id, comment) {
             // 允许被无参调用（例如总线触发关闭），防止访问 undefined 报错。
             if (!comment) {
                 this.closeCommentEdit();
@@ -189,7 +192,6 @@ export default {
             //以下两行代码的作用是：每次点击reply to时，只会有相应的评论会展开一个评论框，而不是每个。
             this.isShow = !this.isShow;
             this.isShowId = id;
-            console.log(comment);
 
             // 精确回复：parentId 永远指向“当前点击的那条评论”。
             this.parentId = comment.id;
@@ -275,7 +277,7 @@ img {
 
 .child-comment-wrap {
     /* 二级评论整体缩进，形成层级关系。 */
-    margin-left: 8%;
+    margin-left: 5%;
 }
 
 
@@ -286,7 +288,7 @@ img {
 
 .replyTo:hover {
     color: var(--interactive-text-active);
-    /* font-weight: 550; */
+    font-weight: 550; 
 }
 .ip{
     /* IP 文案次级强调，避免抢占正文注意力。 */
@@ -295,8 +297,7 @@ img {
 }
 .ip:hover{
     color: var(--interactive-text-active);
-
-    /* font-weight: 550; */
+    font-weight: 550; 
 
 }
 
