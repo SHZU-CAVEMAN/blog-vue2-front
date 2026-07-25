@@ -19,11 +19,13 @@ const api = {
     add(data) {
       return request.post("/comment/add", data);
     },
-    sendVerifyEmail(email) {
-      return request.post("/verify/email", { email });
+    // 给邮箱发送验证码，以验证邮箱的真实性
+    sendEmailCode(email) {
+      return request.post("/email/sendCode", { email });
     },
-    verifyEmailToken(data) {
-      return request.post("/verify/email", data);
+    // 评论身份验证
+    identifyCommentCookie(data) {
+      return request.post("/comment/identity", data);
     },
     uploadAvatar(formData) {
       return request.post("/upload-single-file", formData);
