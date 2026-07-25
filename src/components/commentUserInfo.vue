@@ -3,7 +3,7 @@
 		class="comment-user-info2-modal"
 		v-model="innerVisible"
 		title="评论需填写必要信息"
-		width="620px"
+		width="500px"
 		ok-text="提交"
 		cancel-text="取消"
 		:mask-closable="false"
@@ -16,7 +16,6 @@
 				<div class="field">
 					<div class="inline-field">
 						<input type="text" v-model="nickname" placeholder="昵称" class="input" />
-						<div class="prompt side" :class="{ ok: nicknameOk }">{{ nicknameMsg }}</div>
 					</div>
 				</div>
 			</div>
@@ -26,7 +25,6 @@
 				<div class="field">
 					<div class="inline-field">
 						<input type="text" v-model="email" placeholder="邮箱" class="input" />
-						<div class="prompt side" :class="{ ok: emailOk }">{{ emailMsg }}</div>
 					</div>
 				</div>
 			</div>
@@ -34,24 +32,21 @@
 			<div class="row avatar-row">
 				<div class="label">头像</div>
 				<div class="field avatar-field">
-					<label for="avatar2" class="select-image">选择图片（可选）</label>
+					<label for="avatar2" class="select-image">选择头像（非必选）</label>
 					<input id="avatar2" type="file" @change="imageUpload" style="display: none" />
 					<div ref="preview" class="preview"></div>
 				</div>
 			</div>
 
 			<div class="row code-row">
-				<div class="label">验证码</div>
+				<div class="label">邮箱验证码</div>
 				<div class="field code-field">
 					<div class="code-input-wrap">
-						<button class="send-btn" @click="verifyPost">发送验证码</button>
-						<input type="text" v-model="verify" placeholder="验证码" class="input code-input" />
+						<common-button variant="primary" @click="verifyPost">发送验证码</common-button>
+						<input type="text" v-model="verifyCode" placeholder="验证码" class="input code-input" />
 					</div>
-					<div class="prompt side" :class="{ ok: verifyOk }">{{ verifyMsg }}</div>
 				</div>
 			</div>
-			<div class="tips">* 验证码将发送到您的邮箱</div>
-			<div class="tips">* 以上信息将存储于您的浏览器，以便于下次访问</div>
 		</div>
 	</common-modal>
 </template>
@@ -63,48 +58,12 @@ export default {
 	data() {
 		return {
 			innerVisible: true,
-			nickname: "",
-			email: "",
-			avatar: "",
-			verify: "",
-			savedToken: "",
-			savedNickname: "",
-			savedEmail: "",
-			savedAvatar: "",
-			nicknameMsg: "* 请输入昵称",
-			emailMsg: "* 请输入邮箱",
-			verifyMsg: "",
+			nickname: "", // 评论用户昵称
+			email: "", // 评论用户邮箱
+			avatar: "", // 评论用户头像
+			verifyCode: "", // 邮箱验证码
+			submitting: false, // 防止重复提交
 		};
-	},
-	computed: {
-		nicknameOk() {
-			return this.nicknameMsg === "√";
-		},
-		emailOk() {
-			return this.emailMsg === "√";
-		},
-		verifyOk() {
-			return this.verifyMsg === "√ 验证成功";
-		},
-	},
-	watch: {
-		nickname(val) {
-			this.nicknameMsg = val ? "√" : "* 请输入昵称";
-		},
-		email(val) {
-			if (!val) {
-				this.emailMsg = "* 请输入邮箱";
-				return;
-			}
-			this.emailMsg = this.checkEmail(val) ? "√" : "* 邮箱不合法";
-		},
-		verify(val) {
-			if (!val) {
-				this.verifyMsg = "* 请填写验证码";
-				return;
-			}
-			this.verifyMsg = "";
-		},
 	},
 	methods: {
 		checkEmail(email) {
@@ -129,18 +88,12 @@ export default {
 		// 用户信息框 点击发送验证码 用于验证邮箱是否有效。
 		verifyPost() {
 			if (!this.checkEmail(this.email)) {
-				this.emailMsg = this.email ? "* 邮箱不合法" : "* 请输入邮箱";
-				this.verifyMsg = "* 请先填写有效邮箱";
+				this.$message.warning("请先填写有效邮箱");
 				return;
 			}
 
-			this.savedEmail = this.email;
-			this.savedNickname = this.nickname;
-			this.savedAvatar = this.avatar;
-			this.savedToken = "";
-			this.verifyMsg = "* 请填写验证码";
 			// 发送验证码请求
-			this.$api.comment.sendVerifyEmail(this.email).then(() => {
+			this.$api.comment.sendEmailCode(this.email).then(() => {
 				this.$message.success("验证码已发送");
 			});
 		},
@@ -151,29 +104,38 @@ export default {
 		},
 		// 用户信息框 点击提交 （返回token）
 		handleOk() {
-			const valid = this.nicknameMsg === "√" && this.emailMsg === "√" && !!this.verify;
-			if (!valid) {
-				this.$message.warning("请填写并正确输入验证码");
+			// 防止重复提交
+			if (this.submitting) {
 				return;
 			}
 
-			this.$api.comment.verifyEmailToken({
-				email: this.savedEmail || this.email,
-				verifyCode: this.verify,
-				nickname: this.savedNickname || this.nickname,
-				avatar: this.savedAvatar || this.avatar,
-			}).then((res) => {
-				const token = res.data.data.token;
-				if (!token) {
-					this.$message.warning("校验成功但未收到 token");
+			const valid = !!this.nickname && this.checkEmail(this.email) && !!this.verifyCode;
+			if (!valid) {
+				this.$message.warning("请填写必要信息 并 输入正确验证码");
+				return;
+			}
+
+			this.submitting = true;
+			this.$api.comment.identifyCommentCookie({
+				email: this.email,
+				verifyCode: this.verifyCode,
+				nickname: this.nickname,
+				avatar: this.avatar, // todo
+			}).then(() => {
+				this.$bus.$emit("commentUserInfo", {
+					verified: true,
+				});
+				this.$message.success("信息验证成功");
+				this.handleCancel(); // 取消弹窗
+			}).catch((error) => {
+				const status = error && error.status;
+				if (status === 400) {
+					this.$message.warning("验证码不正确或已过期，请重新发送验证码");
 					return;
 				}
-
-				this.savedToken = token;
-				this.$bus.$emit("commentUserInfo", {
-					token: this.savedToken,
-				});
-				this.handleCancel();
+				this.$message.error("验证失败，请稍后重试");
+			}).finally(() => {
+				this.submitting = false;
 			});
 		},
 	},
@@ -190,139 +152,95 @@ export default {
 
 .row {
 	display: flex;
-	align-items: flex-start;
-	gap: 14px;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 6px;
 	margin-bottom: 12px;
 }
 
 .label {
-	width: 72px;
-	padding-top: 8px;
-	text-align: right;
-	color: #595959;
+	color: #222;
 	font-size: 14px;
+	font-weight: 600;
 }
 
 .field {
-	width: 460px;
+	width: 100%;
 }
 
 .inline-field {
 	display: flex;
-	align-items: center;
-	gap: 10px;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0;
 }
 
 .input {
-	border: 1px solid rgb(71, 71, 71);
+	border: 1px solid #d0d0d0;
 	border-radius: 6px;
-	background-color: rgb(239, 242, 245);
 	height: 40px;
 	padding: 0 10px;
 	width: 100%;
 	box-sizing: border-box;
+	font-size: 14px;
 }
 
-.inline-field .input {
-	width: 250px;
-}
-
-.prompt {
-	margin-top: 6px;
-	color: #ff4d4f;
-	min-height: 20px;
-	font-size: 13px;
-}
-
-.prompt.side {
-	margin-top: 0;
-	line-height: 20px;
-	white-space: nowrap;
-}
-
-.prompt.ok {
-	color: #389e0d;
-}
-
-.avatar-row {
-	align-items: center;
+.input:focus {
+	outline: none;
+	border-color: #666;
 }
 
 .avatar-field {
 	display: flex;
-	align-items: center;
-	gap: 12px;
+	/* align-items: center; */
+	gap: 10px;
 }
 
 .select-image {
-	border: 1px solid rgb(141, 141, 141);
+	border: 1px solid #d0d0d0;
 	border-radius: 6px;
-	background-color: rgb(240, 240, 240);
 	height: 36px;
 	line-height: 36px;
 	padding: 0 12px;
 	cursor: pointer;
+	color: #333;
+	font-size: 13px;
 }
 
 .select-image:hover {
-	color: #fff;
-	background-color: rgb(94, 94, 94);
+	background: #f5f5f5;
 }
 
 .preview {
-	width: 84px;
-	height: 84px;
+	width: 104px;
+	height: 104px;
 	border-radius: 8px;
-	background-color: rgb(239, 242, 245);
+	background-color: #f2f2f2;
 	background-size: cover;
 	background-position: center;
-}
-
-.code-row {
-	align-items: center;
+	border: 1px solid #ddd;
 }
 
 .code-field {
 	display: flex;
-	align-items: center;
-	gap: 10px;
+	align-items: stretch;
+	gap: 8px;
 }
 
 .code-input-wrap {
-	width: 250px;
+	width: 100%;
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 }
 
 .send-btn {
-	border: 1px solid #d9d9d9;
-	background: #fff;
-	border-radius: 6px;
-	height: 36px;
+	height: 40px;
 	width: 110px;
-	padding: 0;
-	cursor: pointer;
-}
-
-.send-btn:hover {
-	border-color: #4096ff;
-	color: #4096ff;
 }
 
 .code-input {
 	flex: 1;
-}
-
-.split {
-	border: none;
-	border-top: 1px solid #f0f0f0;
-	margin: 10px 0;
-}
-
-.tips {
-	color: #8c8c8c;
-	line-height: 1.7;
 }
 
 .comment-user-info2-modal /deep/ .modal-wrap {
@@ -335,67 +253,22 @@ export default {
 }
 
 @media (max-width: 768px) {
-	.content {
-		max-width: 100%;
-	}
-
-	.row {
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.label {
-		width: auto;
-		padding-top: 0;
-		text-align: left;
-	}
-
-	.field {
-		width: 100%;
-	}
-
-	.inline-field {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 6px;
-	}
-
-	.inline-field .input {
-		width: 100%;
-	}
-
-	.prompt.side {
-		white-space: normal;
-	}
-
-	.avatar-row {
-		align-items: flex-start;
-	}
-
 	.avatar-field {
 		flex-direction: column;
 		align-items: flex-start;
 	}
 
 	.preview {
-		width: 120px;
-		height: 120px;
+		width: 110px;
+		height: 110px;
 	}
 
-	.code-row {
-		align-items: stretch;
-	}
-
-	.code-field {
+	.code-input-wrap {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.code-input-wrap {
-		width: 100%;
-	}
-
-	.code-input {
+	.send-btn {
 		width: 100%;
 	}
 }
