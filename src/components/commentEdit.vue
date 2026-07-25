@@ -11,14 +11,12 @@
         <div class="comment-edit-actions">
             <span>欢迎归来！</span>
             <div class="comment-edit-buttons">
-                <!-- todo:如果评论编辑板是最上层的那个，则不需要有“取消”这个按钮 -->
+                <!-- 如果评论编辑板是最上层的那个，则不需要有“取消”这个按钮 -->
                 <!-- 使用通用按钮组件，统一全站按钮样式与交互。 -->
-                <common-button @click="cancel">取消</common-button>
-                <!-- primary 语义按钮：强调提交操作。 -->
-                <common-button variant="primary" @click="commit">提交评论</common-button>
+                <common-button v-show="parentId" @click="cancelComment">取消</common-button>
+                <common-button variant="primary" @click="commitComment">提交评论</common-button>
             </div>
         </div>
-
 
     </div>
 </template>
@@ -51,7 +49,7 @@ export default {
                 height: "auto",
             });
         },
-        cancel() {
+        cancelComment() {
             // 收起当前回复编辑框（由评论列表组件监听关闭）。
             this.$bus.$emit("closeCommentEdit") //不传值
         },
@@ -61,38 +59,37 @@ export default {
         },
         // 接收用户信息输入框 （commentUserInfo.vue） 提交的结果
         info(data) {
-            // 1. 如果没有 token，说明邮箱验证未完成，提示用户先完成验证。
-            const token = data && data.token ? data.token : "";
-            if (!token) {
+            // 后端校验成功并写入 HttpOnly Cookie 后，继续提交评论。
+            const verified = !!(data && data.verified);
+            if (!verified) {
                 this.$message.warning("邮箱验证未完成，请先完成验证");
                 return;
             }
-            localStorage.setItem("token", token);
-            this.commitComment();
+            // this.commitComment(); //需要手动点击
         },
         commitComment() {
+            if(this.comment == ''){
+                this.$message.warning("评论不能为空");
+                return;
+            }
             // 提交评论：合并用户信息、评论内容、文章上下文后发送。
             const numericArticleId = Number(this.articleId);
             const parentId = this.parentId ? Number(this.parentId) : null;
-            const token = localStorage.getItem("token");
-            if (!token) {
-                this.$message.warning("请先完成邮箱验证");
-                this.visible = true;
-                return;
-            }
 
             this.$api.comment.add({
                 articleId: Number.isNaN(numericArticleId) ? this.articleId : numericArticleId,
                 parentId: Number.isNaN(parentId) ? null : parentId,
                 content: this.comment,
             }).then(() => {
-                this.$message.success("提交评论成功");
-                // 评论提交成功后通知根组件刷新评论列表，保证当前页面实时可见。
-                this.$bus.$emit("commentAdded");
-                // 重置编辑器内容，避免重复提交旧内容。
-                this.comment = "";
-                this.visible = false;
+                this.$message.success("评论成功");
+    
+                this.$bus.$emit("commentAdded"); // 评论提交成功后通知根组件刷新评论列表，保证当前页面实时可见。
+                this.comment = "";  // 重置编辑器内容，避免重复提交旧内容。
+                this.visible = false; // 关闭用户信息输入框
             }).catch((err) => {
+                this.$message.warning(err.message || "评论提交失败，请稍后重试");
+                this.visible = true;
+
                 // 手动上报评论提交异常，携带文章和回复上下文，方便后续定位具体失败场景。
                 this.$reportError("comment-submit-failed", err, {
                     module: "commentEdit",
@@ -101,22 +98,6 @@ export default {
                     hasCommentContent: !!this.comment,
                 });
             });
-        },
-        commit() {
-            //1 先判断评论内容。
-            if(this.comment == ''){
-                this.$message.warning("评论不能为空");
-                return;
-            }
-
-            //2 有 token 直接提交；无 token 先弹信息框。
-            const token = localStorage.getItem("token");
-            if (token) {
-                this.commitComment();
-            } else {
-                this.visible = true;
-            }
-
         },
 
     },
