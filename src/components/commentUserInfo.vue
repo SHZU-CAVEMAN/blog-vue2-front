@@ -13,19 +13,15 @@
 		<div class="content">
 			<div class="row">
 				<div class="label">昵称</div>
-				<div class="field">
-					<div class="inline-field">
-						<input type="text" v-model="nickname" placeholder="昵称" class="input" />
-					</div>
+				<div class="field inline-field ">
+					<input type="text" v-model="nickname" placeholder="昵称" class="input" />
 				</div>
 			</div>
 
 			<div class="row">
 				<div class="label">邮箱</div>
-				<div class="field">
-					<div class="inline-field">
-						<input type="text" v-model="email" placeholder="邮箱" class="input" />
-					</div>
+				<div class="field inline-field ">
+					<input type="text" v-model="email" placeholder="邮箱" class="input" />
 				</div>
 			</div>
 
@@ -40,11 +36,9 @@
 
 			<div class="row code-row">
 				<div class="label">邮箱验证码</div>
-				<div class="field code-field">
-					<div class="code-input-wrap">
-						<common-button class="send-btn" variant="primary" @click="verifyPost">发送验证码</common-button>
-						<input type="text" v-model="verifyCode" placeholder="验证码" class="input" />
-					</div>
+				<div class="field code-field code-input-wrap">
+					<common-button class="send-btn" variant="primary" @click="verifyPost">发送验证码</common-button>
+					<input type="text" v-model="verifyCode" placeholder="验证码" class="input" />
 				</div>
 			</div>
 		</div>
@@ -70,6 +64,7 @@ export default {
 			var regex = /^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$/;
 			return regex.test(email);
 		},
+		// 上传评论者头像
 		imageUpload(e) {
 			const file = e.target.files && e.target.files[0];
 			if (!file) return;
@@ -91,49 +86,44 @@ export default {
 				this.$message.warning("请先填写有效邮箱");
 				return;
 			}
-
 			// 发送验证码请求
 			this.$api.comment.sendEmailCode(this.email).then(() => {
 				this.$message.success("验证码已发送");
 			});
 		},
-		// 用户信息框 点击取消
+		// 点击取消
 		handleCancel() {
 			this.innerVisible = false;
 			this.$bus.$emit("commentUserInfoShow", false);
 		},
-		// 用户信息框 点击提交 （返回token）
+		// 点击提交 （返回cookie）
 		handleOk() {
 			// 防止重复提交
 			if (this.submitting) {
 				return;
 			}
-
+			// 验证必要信息是否填写完整
 			const valid = !!this.nickname && this.checkEmail(this.email) && !!this.verifyCode;
 			if (!valid) {
 				this.$message.warning("请填写必要信息 并 输入正确验证码");
 				return;
 			}
 
-			this.submitting = true;
+			this.submitting = true; // 防止重复提交
+
 			this.$api.comment.identifyCommentCookie({
 				email: this.email,
 				verifyCode: this.verifyCode,
 				nickname: this.nickname,
 				avatar: this.avatar, // todo
 			}).then(() => {
+				this.$message.success("信息验证成功");
 				this.$bus.$emit("commentUserInfo", {
 					verified: true,
-				});
-				this.$message.success("信息验证成功");
-				this.handleCancel(); // 取消弹窗
-			}).catch((error) => {
-				const status = error && error.status;
-				if (status === 400) {
-					this.$message.warning("验证码不正确或已过期，请重新发送验证码");
-					return;
-				}
-				this.$message.error("验证失败，请稍后重试");
+				}); // 验证成功后，通知 commentEdit.vue 继续提交评论
+				this.handleCancel(); // 关闭弹窗
+			}).catch((err) => {
+				this.$message.error(err?.message || "验证失败，请稍后重试");
 			}).finally(() => {
 				this.submitting = false;
 			});
