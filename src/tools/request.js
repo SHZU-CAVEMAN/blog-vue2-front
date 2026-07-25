@@ -36,17 +36,27 @@ request.interceptors.request.use((config) => {
 // 2) 非 200/201 时返回 code/message 作为错误信息。
 request.interceptors.response.use(
   (response) => {
-    const status = response && response.status;
-    const payload = response && response.data ? response.data : {};
+    // response.status 是 HTTP 层状态码（例如 200/201/401/500）。
+    // response.data 是后端返回的业务响应体（通常包含 code/message/data）。
+    const status = response?.status;
+    const payload = response?.data || {};
 
+    // 第一层：HTTP 层判定。
+    // 非 200/201 统一当作失败，构造标准错误并进入调用方 catch。
     if (status !== 200 && status !== 201) {
-      const error = new Error(payload.message || `请求失败（HTTP ${status}）`);
+
+      const error = new Error(payload.message || `请求失败（HTTP ${status}）`); // 创建Error对象，方便后续打印堆栈信息（入参给Error.message赋值）
+
+      // 给 error 对象附加 code/status/response 等属性，方便调用时按需处理。
       error.code = payload.code || `HTTP_${status}`;
-      error.status = status;
+      error.status = status; // HTTP 层状态码
       error.response = response;
+
       return Promise.reject(error);
     }
 
+    // 第二层：业务层判定。
+    // 某些接口会返回 HTTP 200，但业务 code 非 0，依然要按失败处理。
     if (payload && Object.prototype.hasOwnProperty.call(payload, "code") && payload.code !== 0) {
       const error = new Error(payload.message || "请求失败");
       error.code = payload.code;
@@ -55,20 +65,25 @@ request.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // 通过上述两层校验后，认为请求成功，交给业务代码继续处理。
     return response;
   },
   (error) => {
-    const response = error && error.response;
-    const status = response && response.status;
-    const payload = response && response.data ? response.data : {};
+    // Axios 在网络错误、超时、跨域拦截、HTTP 4xx/5xx 等场景会进入这里。
+    // 这里把不同来源的错误统一成同一结构，方便页面按 err.status / err.code 处理。
+    const response = error?.response;
+    const status = response?.status;
+    const payload = response?.data || {};
+
     const normalizedError = new Error(
       payload.message || error.message || `请求失败${status ? `（HTTP ${status}）` : ""}`
     );
 
+    // 给 normalizedError 对象附加 code/status/response/raw 等属性，方便调用时按需处理。
     normalizedError.code = payload.code || error.code || "REQUEST_ERROR";
     normalizedError.status = status || null;
     normalizedError.response = response || null;
-    normalizedError.raw = error;
+    normalizedError.raw = error; // raw 保留原始 Axios 错误对象，调试时可查看更完整上下文。
 
     return Promise.reject(normalizedError);
   }
