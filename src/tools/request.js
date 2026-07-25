@@ -13,9 +13,17 @@ export const SERVICE_ORIGIN = process.env.VUE_APP_STATIC_ORIGIN || (
 const request = axios.create({
   baseURL: API_ORIGIN,
   timeout: 15000,
+  withCredentials: true, // 允许请求时携带 cookie
 });
 
 request.interceptors.request.use((config) => {
+
+  const requestUrl = (config && config.url) || "";
+  // 评论相关接口使用 HttpOnly Cookie，不附带 localStorage token。
+  if (/^\/(comment)\//.test(requestUrl)) {
+    return config;
+  }
+
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = token;
