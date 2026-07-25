@@ -85,16 +85,12 @@ export default {
 
       // 刷新分类页时，articles 组件不会创建，这里兜底拉取一次文章列表。
       this.$api.article.getAll()
-        .then((res) => {
+      .then((res) => {
           const all = ((res && res.data && res.data.data) || []).slice().reverse();
           this.$store.dispatch("setArticle", all);
-        })
-        .catch((err) => {
-          console.error("分类页文章加载失败：", err.message || err, {
-            code: err.code,
-            status: err.status,
-          });
-        });
+      }).catch((err) => {
+          this.$message.warning("分类页文章加载失败"+ err.message);
+      });
     },
     // 作废弃用，监听name了，这个方法就没什么意义了。
     cateEventHandler(name) {

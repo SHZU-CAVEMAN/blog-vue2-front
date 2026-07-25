@@ -37,10 +37,7 @@ export default {
           this.$store.dispatch("setComment", res.data.data);
         })
         .catch((err) => {
-          console.error("评论加载失败：", err.message || err, {
-            code: err.code,
-            status: err.status,
-          });
+          this.$message.warning("评论加载失败"+ err.message);
         });
     },
     // 事件总线回调：收到评论新增事件后刷新一次评论列表。

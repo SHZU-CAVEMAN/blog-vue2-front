@@ -77,18 +77,14 @@ export default {
   },
   created() {
     this.$api.article.getAll()
-      .then((res) => {
+    .then((res) => {
         const list = ((res && res.data && res.data.data) || []).slice().reverse();
         // 只写入 Vuex，避免 Vuex + sessionStorage 的重复存储。
         this.$store.dispatch("setArticle", list);
-        console.log("文章数据加载：", list);
-      })
-      .catch((err) => {
-        console.error("文章列表加载失败：", err.message || err, {
-          code: err.code,
-          status: err.status,
-        });
-      });
+        //console.log("文章数据加载：", list);
+    }).catch((err) => {
+        this.$message.warning("文章列表加载失败"+ err.message);
+    });
   },
 };
 </script>

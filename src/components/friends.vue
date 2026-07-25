@@ -313,12 +313,12 @@ export default {
       this.activeCategory = category;
     },
     loadFriendlinks() {
+      // 友链请求
       this.$api.friendlink.getAll()
-        .then((res) => {
+      .then((res) => {
           const rows = this.resolveRowsFromResponse(res);
           this.groupFriendlinks(rows);
-        })
-        .catch((err) => {
+      }).catch((err) => {
           this.friendsCategories = [];
           this.activeCategory = this.ALL_CATEGORY_KEY;
           if (this.$reportError) {
@@ -326,11 +326,9 @@ export default {
               module: "friends",
             });
           }
-          console.error("友链加载失败：", err.message || err, {
-            code: err.code,
-            status: err.status,
-          });
-        });
+          this.$message.warning("友链加载失败"+err.message);
+
+      });
     },
   },
   created() {
