@@ -42,8 +42,8 @@
 				<div class="label">邮箱验证码</div>
 				<div class="field code-field">
 					<div class="code-input-wrap">
-						<common-button variant="primary" @click="verifyPost">发送验证码</common-button>
-						<input type="text" v-model="verifyCode" placeholder="验证码" class="input code-input" />
+						<common-button class="send-btn" variant="primary" @click="verifyPost">发送验证码</common-button>
+						<input type="text" v-model="verifyCode" placeholder="验证码" class="input" />
 					</div>
 				</div>
 			</div>
@@ -221,12 +221,14 @@ export default {
 	border: 1px solid #ddd;
 }
 
+/* 邮箱验证码输入框和发送按钮在同一行显示 */
 .code-field {
 	display: flex;
 	align-items: stretch;
 	gap: 8px;
 }
 
+/* 同上 */
 .code-input-wrap {
 	width: 100%;
 	display: flex;
@@ -234,14 +236,16 @@ export default {
 	gap: 8px;
 }
 
+/* 发送验证码按钮样式 */
 .send-btn {
 	height: 40px;
-	width: 110px;
+	width: auto;
+	flex: 0 0 auto;
+	white-space: nowrap;
+	padding-left: 12px;
+	padding-right: 12px;
 }
 
-.code-input {
-	flex: 1;
-}
 
 .comment-user-info2-modal /deep/ .modal-wrap {
 	max-height: none;
