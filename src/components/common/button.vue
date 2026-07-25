@@ -54,7 +54,7 @@ export default {
 }
 
 .common-button--primary:hover {
-  background-color: #0f172a;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #0f172a;
 }
 </style>
