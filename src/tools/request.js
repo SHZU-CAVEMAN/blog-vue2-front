@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 开发环境：/api（由 vue.config.js 代理到本地后端）
 // 生产环境：/api（由 nginx proxy_pass 转发到后端）
-const API_ORIGIN = process.env.VUE_APP_API_BASE_URL || "/api";
+export const API_ORIGIN = process.env.VUE_APP_API_BASE_URL || "/api";
 export const SERVICE_ORIGIN = process.env.VUE_APP_STATIC_ORIGIN || (
   process.env.NODE_ENV === "production" && typeof window !== "undefined"
     ? window.location.origin

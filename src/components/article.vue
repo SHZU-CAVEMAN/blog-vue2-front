@@ -48,7 +48,7 @@ export default {
 
   computed: {
     pictureUrl() {
-      return this.$uploadFilesBase + this.article.picture;
+      return `/api/files/${encodeURIComponent(this.article.picture)}`;
     },
     placeholder() {
       // 兼容后端未生成 zipped_ 压缩图的情况，避免 404。

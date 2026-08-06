@@ -15,8 +15,7 @@
         <!-- :src="pictureCompressedUrl" -->
         <img
           class="avatar"
-          
-          src="../assets/zhuqing2.jpg"
+          :src="pictureOriginUrl"
           width="130"
           height="130"
           loading="lazy"
@@ -67,22 +66,12 @@ export default {
     return {
       // 头像失败降级阶段：0=默认压缩图，1=原图兜底，2=本地静态图兜底。
       avatarFallbackStage: 0,
+      avatarFileId: 160,
     };
   },
   computed: {
-    // 原图兜底地址：当现代格式或压缩图不存在时回退。
     pictureOriginUrl() {
-      return this.$uploadFilesBase + "zhishui.jpg";
-    },
-    // 压缩版 JPG 作为默认 src，优先降低首屏字节体积。
-    pictureCompressedUrl() {
-      return this.$uploadFilesBase + "zipped_zhishui.jpg";
-    },
-    pictureWebpUrl() {
-      return this.$uploadFilesBase + "zhishui.webp";
-    },
-    pictureAvifUrl() {
-      return this.$uploadFilesBase + "zhishui.avif";
+      return `/api/files/${encodeURIComponent(this.avatarFileId)}`;
     },
     // 本地静态头像兜底：当线上资源无法访问时，避免一直重试导致闪烁。
     localAvatarFallbackUrl() {

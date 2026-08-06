@@ -8,7 +8,7 @@ import './assets/css/typography.css'; // 全局引入排版样式，保持文章
 import CommonComponents from './components/common';
 import vSlideIn from './tools/vSlideIn';
 import { initErrorMonitor } from './tools/errorMonitor';
-import request, { SERVICE_ORIGIN } from './tools/request';
+import request from './tools/request';
 import api from './api';
 import { initializeTheme } from './tools/theme';
 
@@ -97,9 +97,7 @@ initializeTheme();
 Vue.prototype.$request = request;
 Vue.prototype.$api = api;
 Vue.prototype.$message = message;
-// 暴露静态资源根路径，供组件/工具在运行时拼接静态资源 URL。
-const staticOrigin = (process.env.VUE_APP_STATIC_ORIGIN || SERVICE_ORIGIN).replace(/\/+$/, '');
-Vue.prototype.$uploadFilesBase = `${staticOrigin}/uploadFiles/`;
+
 // 暴露 Markdown 运行时加载器，供详情页组件在渲染前主动等待。
 Vue.prototype.$ensureMarkdownRuntime = ensureMarkdownRuntime;
 // 暴露运行时就绪状态：详情页可据此跳过重复“加载中”闪烁。

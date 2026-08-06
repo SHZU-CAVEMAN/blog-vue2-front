@@ -181,7 +181,7 @@ export default {
             }));
         },
         avatarUrl(fileName) {
-            return this.$uploadFilesBase + fileName;
+            return `/api/files/${encodeURIComponent(fileName)}`;
         },
         replyTo(id, comment) {
             // 允许被无参调用（例如总线触发关闭），防止访问 undefined 报错。
