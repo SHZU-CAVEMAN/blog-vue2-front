@@ -339,16 +339,15 @@ export default {
 
 <style scoped>
 .friends-page {
-  width: 100%;
-  margin-top: 3.5vh;
+  width: min(62%, 1100px);
+  margin: 2vh auto 0;
   box-sizing: border-box;
 }
 
 .friends-card {
-  width: 96%;
-  margin-left: 2%;
-  background-color: #ffffff;
-  border: 1px solid rgb(208, 215, 222);
+  width: 100%;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-primary);
   border-radius: 10px;
   padding: 20px;
   box-sizing: border-box;
@@ -400,26 +399,12 @@ export default {
 }
 
 .friends-tab-count {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background-color: #eaeef2;
-  color: #57606a;
+  color: var(--text-color-secondary);
   font-size: 12px;
-  line-height: 20px;
-  text-align: center;
 }
 
 .friends-tab-active .friends-tab-count {
-  background-color: #dff3ff;
   color: var(--interactive-text-active);
-}
-
-.friends-apply-btn:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
-  color: #374151;
 }
 
 .apply-form {
@@ -493,24 +478,24 @@ export default {
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  border: 1px solid #d0d7de;
+  border: 1px solid var(--color-border-primary);
   border-radius: 8px;
-  background-color: #f6f8fa;
+  background-color: var(--color-bg-muted);
   text-decoration: none;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .friend-item:hover {
-  border-color: #d0d7de;
-  background-color: #f3f4f6;
+  border-color: var(--color-border-primary);
+  background-color: var(--color-bg-surface);
 }
 
 .friend-avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid #d0d7de;
-  background-color: #ffffff;
+  border: 1px solid var(--color-border-primary);
+  background-color: var(--color-bg-surface);
   flex-shrink: 0;
 }
 
@@ -528,7 +513,7 @@ export default {
 
 .friend-desc {
   margin-top: 4px;
-  color: #57606a;
+  color: var(--text-color-secondary);
   font-size: var(--font-size-md);
   line-height: 1.4;
 }
@@ -546,6 +531,12 @@ export default {
 .friend-item:hover .friend-name,
 .friend-item:hover .friend-url {
   color: var(--interactive-text-active);
+}
+
+@media (max-width: 1200px) {
+  .friends-page {
+    width: calc(100% - 24px);
+  }
 }
 
 @media (max-width: 768px) {

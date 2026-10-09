@@ -1,14 +1,53 @@
 <template>
    <div class="navigation">
-      <img src="../assets/wangzhan.jpg" class="img" />
-      <div class="brand-title">光之羽</div>
+      <div class="navigation-content">
+         <!-- <img src="../assets/wangzhan.jpg" class="img" /> -->
+         <div class="brand-title">
+            <span class="brand-title-text" :style="brandTitleAnimationStyle">{{ brandTitle }}</span>
+         </div>
 
-      <div class="nav-actions">
-         <!-- 桌面端导航项：移动端会折叠到下方抽屉面板。 -->
-         <div class="nav-links-desktop">
+         <div class="nav-actions">
+            <!-- 桌面端导航项：移动端会折叠到下方抽屉面板。 -->
+            <div class="nav-links-desktop">
             <!-- 首页高亮由当前路由控制，避免手动状态和路由不同步。 -->
             <div :class="{ 'nav-home-active': isHomeActive }" class="nav-item nav-home" @click="jumpHome">
                首页
+            </div>
+
+            <div
+               class="category-menu"
+               @mouseenter="categoryMenuOpen = true"
+               @mouseleave="categoryMenuOpen = false"
+            >
+               <button
+                  :class="{ 'nav-home-active': isCategoryActive }"
+                  :aria-expanded="String(categoryMenuOpen)"
+                  aria-haspopup="true"
+                  class="nav-item nav-home category-menu-trigger"
+                  type="button"
+                  @click="toggleCategoryMenu"
+               >
+                  分类
+               </button>
+
+               <div v-if="categoryMenuOpen" class="category-menu-panel">
+                  <button
+                     v-for="item in categories"
+                     :key="item.name"
+                     :class="{ 'category-menu-item-active': currentCategoryName === item.name }"
+                     class="category-menu-item"
+                     type="button"
+                     @click="jumpCategory(item.name)"
+                  >
+                     <span>{{ item.name }}</span>
+                     <span v-if="item.number !== undefined" class="category-menu-count">{{ item.number }}</span>
+                  </button>
+                  <div v-if="!categories.length" class="category-menu-empty">暂无分类</div>
+               </div>
+            </div>
+
+            <div :class="{ 'nav-home-active': isArchiveActive }" class="nav-item nav-home" @click="jumpArchive">
+               归档
             </div>
 
             <!-- 关于页固定跳转到指定文章详情。 -->
@@ -30,39 +69,59 @@
             </div>
          </div>
 
-         <!-- 移动端控制区：折叠按钮与主题切换并排显示。 -->
-         <div class="mobile-actions">
-            <button class="mobile-nav-toggle" type="button" @click="toggleMobileNav">
-               <!-- 三横线汉堡图标：展开时切换为 X 形态。 -->
-               <span class="hamburger" :class="{ 'hamburger-open': mobileNavOpen }" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-               </span>
-            </button>
+            <!-- 移动端控制区：折叠按钮与主题切换并排显示。 -->
+            <div class="mobile-actions">
+               <button class="mobile-nav-toggle" type="button" @click="toggleMobileNav">
+                  <!-- 三横线汉堡图标：展开时切换为 X 形态。 -->
+                  <span class="hamburger" :class="{ 'hamburger-open': mobileNavOpen }" aria-hidden="true">
+                     <span></span>
+                     <span></span>
+                     <span></span>
+                  </span>
+               </button>
 
-            <!-- 日夜开关：容器和滑块都根据 isNight 切换对应样式。 -->
-            <div :class="{ 'theme-toggle-night': isNight }" class="theme-toggle" @click="toggleTheme">
-               <span class="toggle-icon toggle-sun">☀</span>
-               <span class="toggle-icon toggle-moon">☾</span>
-               <!-- 滑块根据 isNight 切换位置 ：-->
-               <span :class="{ 'toggle-knob-night': isNight }" class="toggle-knob"></span>
+               <!-- 日夜开关：容器和滑块都根据 isNight 切换对应样式。 -->
+               <div :class="{ 'theme-toggle-night': isNight }" class="theme-toggle" @click="toggleTheme">
+                  <span class="toggle-icon toggle-sun">☀</span>
+                  <span class="toggle-icon toggle-moon">☾</span>
+                  <!-- 滑块根据 isNight 切换位置 ：-->
+                  <span :class="{ 'toggle-knob-night': isNight }" class="toggle-knob"></span>
+               </div>
             </div>
          </div>
-      </div>
 
-      <!-- 移动端折叠导航：点击“菜单”后展开。 -->
-      <div v-if="mobileNavOpen" class="mobile-nav-panel">
-         <div :class="{ 'nav-home-active': isHomeActive }" class="mobile-nav-item" @click="jumpHome">
-            首页
-         </div>
+         <!-- 移动端折叠导航：点击“菜单”后展开。 -->
+         <div v-if="mobileNavOpen" class="mobile-nav-panel">
+            <div :class="{ 'nav-home-active': isHomeActive }" class="mobile-nav-item" @click="jumpHome">
+               首页
+            </div>
 
-         <div :class="{ 'nav-home-active': isAboutActive }" class="mobile-nav-item" @click="jumpAbout">
-            关于
-         </div>
+            <div :class="{ 'nav-home-active': isArchiveActive }" class="mobile-nav-item" @click="jumpArchive">
+               归档
+            </div>
 
-         <div :class="{ 'nav-home-active': isFriendsActive }" class="mobile-nav-item" @click="jumpFriends">
-            友链
+            <div class="mobile-category-group">
+               <div class="mobile-category-label">分类</div>
+               <button
+                  v-for="item in categories"
+                  :key="item.name"
+                  :class="{ 'mobile-nav-item-active': currentCategoryName === item.name }"
+                  class="mobile-nav-item mobile-category-item"
+                  type="button"
+                  @click="jumpCategory(item.name)"
+               >
+                  <span>{{ item.name }}</span>
+                  <span v-if="item.number !== undefined">{{ item.number }}</span>
+               </button>
+            </div>
+
+            <div :class="{ 'nav-home-active': isAboutActive }" class="mobile-nav-item" @click="jumpAbout">
+               关于
+            </div>
+
+            <div :class="{ 'nav-home-active': isFriendsActive }" class="mobile-nav-item" @click="jumpFriends">
+               友链
+            </div>
          </div>
       </div>
    </div>
@@ -75,20 +134,61 @@ export default {
    name: "navigationComponent",
    data() {
       return {
+         // 修改这里即可更换品牌名，打字动画会按实际字符数自动适配。
+         brandTitle: "穴居人的空间",
          isNight: false,
          mobileNavOpen: false,
+         categoryMenuOpen: false,
       }
    },
    watch: {
       $route() {
          // 路由变化后自动收起移动端菜单，避免页面切换后面板残留。
          this.mobileNavOpen = false;
+         this.categoryMenuOpen = false;
       }
    },
    computed: {
+      brandTitleAnimationStyle() {
+         const characterCount = Math.max(Array.from(this.brandTitle).length, 1);
+
+         return {
+            "--brand-title-width": `${characterCount * 1.08}em`,
+            "--brand-typing-steps": characterCount,
+            "--brand-typing-duration": `${Math.max(0.6, characterCount * 0.3)}s`,
+         };
+      },
+      categories() {
+         const articles = this.$store.state.articleInfo.article || [];
+         const counts = {};
+
+         articles.forEach((article) => {
+            const category = article && article.category;
+            const name = typeof category === "string"
+               ? category
+               : category && (category.name || category.title);
+
+            if (name) {
+               counts[name] = (counts[name] || 0) + 1;
+            }
+         });
+
+         return Object.keys(counts)
+            .map((name) => ({ name, number: counts[name] }))
+            .sort((first, second) => second.number - first.number);
+      },
+      currentCategoryName() {
+         return this.$route.name === "articles" ? this.$route.query.category || "" : "";
+      },
+      isCategoryActive() {
+         return this.$route.name === "articles" && Boolean(this.currentCategoryName);
+      },
       isHomeActive() {
          // 根据当前路由判断首页是否处于选中状态，避免手动维护状态和路由不同步。
-         return this.$route.name === "articles";
+         return this.$route.name === "articles" && !this.currentCategoryName;
+      },
+      isArchiveActive() {
+         return this.$route.name === "archive";
       },
       isFriendsActive() {
          // 友链导航的激活态：仅在 friendsComponent 路由下显示高亮。
@@ -107,6 +207,22 @@ export default {
             name: "articles",
          });
          this.mobileNavOpen = false;
+      },
+      jumpArchive() {
+         this.$router.push({
+            name: "archive",
+         });
+         this.mobileNavOpen = false;
+      },
+      jumpCategory(name) {
+         this.$router.push({
+            name: "articles",
+            query: {
+               category: name,
+            },
+         });
+         this.mobileNavOpen = false;
+         this.categoryMenuOpen = false;
       },
       jumpFriends() {
          this.$router.push({
@@ -128,6 +244,9 @@ export default {
          // 移动端导航折叠开关：控制悬浮面板的显示与隐藏。
          this.mobileNavOpen = !this.mobileNavOpen;
       },
+      toggleCategoryMenu() {
+         this.categoryMenuOpen = !this.categoryMenuOpen;
+      },
       toggleTheme() {
          // 切换全局主题：同步更新 html[data-theme] 和本地存储。
          const nextTheme = this.isNight ? "light" : "dark";
@@ -146,33 +265,80 @@ export default {
 </script>
 
 <style lang="css" scoped>
-@import url("https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap");
-
 /* 顶部导航容器：采用 GitHub 风格浅灰底和底部分割线。 */
 .navigation {
-   display: flex;
-   align-items: center;
    text-align: center;
    position: relative;
    background-color: var(--color-bg-nav);
    border-bottom: 1px solid var(--color-border-primary);
-   height: 10vh;
-   padding: 0 2%;
+   height: 60px;
+}
+
+.navigation-content {
+   display: flex;
+   align-items: center;
+   width: min(68%, 1280px);
+   height: 100%;
+   margin: 0 auto;
 }
 
 /* 品牌标题占据中间剩余空间，保证右侧操作区始终贴右。 */
 .brand-title {
-   margin-left: 2vh;
+   display: flex;
+   align-items: center;
+   height: 100%;
+   margin-left: 16px;
    flex: 1;
    color: var(--text-color-primary);
-   /* 品牌标题使用手写/书法感字体，避免默认宋体观感。 */
-   font-family: "Ma Shan Zheng", "STKaiti", "KaiTi", "YouYuan", "PingFang SC", cursive;
+   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
    font-size: 1.5rem;
-   font-weight: 500;
+   font-weight: 700;
    line-height: 1.4;
    letter-spacing: 0.08em;
-   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 8px rgba(31, 35, 40, 0.08);
    text-align: left;
+}
+
+.brand-title-text {
+   display: inline-block;
+   width: 0;
+   overflow: hidden;
+   border-right: 2px solid currentColor;
+   letter-spacing: 0.08em;
+   white-space: nowrap;
+   animation: brand-typing var(--brand-typing-duration, 1.2s) steps(var(--brand-typing-steps, 3), end) 0.15s forwards,
+      brand-caret var(--brand-typing-duration, 1.2s) step-end 0.15s forwards;
+}
+
+@keyframes brand-typing {
+   from {
+      width: 0;
+   }
+   to {
+      width: var(--brand-title-width, 3.3em);
+   }
+}
+
+@keyframes brand-caret {
+   0%,
+   24%,
+   50%,
+   74% {
+      border-color: currentColor;
+   }
+   25%,
+   49%,
+   75%,
+   100% {
+      border-color: transparent;
+   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .brand-title-text {
+      width: auto;
+      border-right: 0;
+      animation: none;
+   }
 }
 
 .img {
@@ -185,15 +351,88 @@ export default {
    display: flex;
    align-items: center;
    justify-content: flex-end;
-   gap: 3vh;
+   gap: 28px;
    height: 100%;
 }
 
 .nav-links-desktop {
    display: flex;
    align-items: center;
-   gap: 3vh;
+   gap: 28px;
    height: 100%;
+}
+
+.category-menu {
+   position: relative;
+   display: flex;
+   align-items: center;
+   height: 100%;
+}
+
+.category-menu-trigger {
+   border: 0;
+   padding: 0;
+   background: transparent;
+   font: inherit;
+}
+
+.category-menu-panel {
+   position: absolute;
+   top: calc(100% - 8px);
+   left: 50%;
+   z-index: 1500;
+   display: flex;
+   width: max-content;
+   min-width: 140px;
+   max-width: calc(100vw - 32px);
+   max-height: min(420px, calc(100vh - 100px));
+   padding: 6px;
+   overflow-y: auto;
+   border: 1px solid var(--color-border-primary);
+   border-radius: 8px;
+   background: var(--color-bg-surface);
+   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+   box-sizing: border-box;
+   flex-direction: column;
+   gap: 2px;
+   transform: translateX(-50%);
+}
+
+.category-menu-item {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   width: 100%;
+   border: 0;
+   border-radius: 6px;
+   padding: 2px;
+   background: transparent;
+   color: var(--interactive-text-rest);
+   cursor: pointer;
+   font-family: var(--font-family-sans);
+   font-size: var(--font-size-md);
+   font-weight: var(--font-weight-medium);
+   text-align: left;
+}
+
+.category-menu-item:hover,
+.category-menu-item-active {
+   background: var(--color-bg-muted);
+   color: var(--interactive-text-active);
+}
+
+.category-menu-count {
+   color: var(--text-color-secondary);
+   font-size: inherit;
+   font-weight: inherit;
+}
+
+.category-menu-empty {
+   padding: 8px;
+   color: var(--text-color-secondary);
+   font-family: var(--font-family-sans);
+   font-size: var(--font-size-xl);
+   text-align: left;
 }
 
 /* 移动端控制区默认隐藏：仅在小屏展示。 */
@@ -312,9 +551,15 @@ export default {
       height: auto;
       min-height: 64px;
       padding: 8px 12px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+   }
+
+   .navigation-content {
+      position: relative;
+      width: 100%;
+      min-height: 48px;
       flex-wrap: wrap;
       row-gap: 8px;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
    }
 
    .img {
@@ -400,7 +645,7 @@ export default {
       display: flex;
       position: absolute;
       top: calc(100% + 6px);
-      right: 12px;
+      right: 0;
       width: min(220px, calc(100% - 24px));
       padding: 8px;
       border: 1px solid var(--color-border-primary);
@@ -429,6 +674,36 @@ export default {
    }
 
    .mobile-nav-item.nav-home-active {
+      color: var(--interactive-text-active);
+      background: var(--color-bg-muted);
+   }
+
+   .mobile-category-group {
+      display: flex;
+      padding: 4px 0;
+      border-top: 1px solid var(--color-border-primary);
+      border-bottom: 1px solid var(--color-border-primary);
+      flex-direction: column;
+      gap: 2px;
+   }
+
+   .mobile-category-label {
+      padding: 4px 8px;
+      color: var(--text-color-secondary);
+      font-size: 0.8rem;
+      text-align: left;
+   }
+
+   .mobile-category-item {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      font: inherit;
+   }
+
+   .mobile-category-item.mobile-nav-item-active {
       color: var(--interactive-text-active);
       background: var(--color-bg-muted);
    }

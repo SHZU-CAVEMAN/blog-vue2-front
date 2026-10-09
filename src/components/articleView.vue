@@ -1,13 +1,13 @@
 <!-- article.vue点击文章title，跳转到这个组件，这个组件接收文章信息后转交给markdown组件，由它去发请求 -->
 <template>
-  <div>
+  <div class="article-detail-view">
     <template v-if="markdownReady">
-      <!-- 文章正文 -->
+      <!-- 文章详情布局提供主列，评论作为同一主列内的插槽内容。 -->
       <keep-alive>
-        <markdown :id="id" :name="name"></markdown>
+        <markdown :id="id" :name="name">
+          <comment :article-id="id"></comment>
+        </markdown>
       </keep-alive>
-      <!-- 评论组件只依赖文章 id，避免展示层继续携带旧字段名。 -->
-      <comment :article-id="id"></comment>
     </template>
   </div>
 </template>
@@ -36,16 +36,7 @@ export default {
   },
   watch: {
     id() {
-      this.resetScrollTop();
-    },
-    name() {
-      this.resetScrollTop();
-    },
-    markdownReady(ready) {
-      if (ready) {
-        // 运行时就绪后正文才挂载，延后一小段时间再次回顶，避免内容渲染把页面推回中间。
-        this.resetScrollTop(3);
-      }
+      this.scrollToTop();
     },
   },
   created() {
@@ -56,7 +47,6 @@ export default {
       window.history.scrollRestoration = "manual";
     }
 
-    this.resetScrollTop();
     // 已就绪直接返回：避免重复触发加载 Promise。
     if (this.markdownReady) {
       return;
@@ -65,26 +55,19 @@ export default {
     this.tryLoadRuntime();
   },
   mounted() {
-    this.resetScrollTop(2);
+    // Markdown 运行时已就绪时，正文会直接挂载，需在此回顶一次。
+    if (this.markdownReady) {
+      this.scrollToTop();
+    }
   },
 
   methods: {
-    // 详情页进入/切换文章时强制回到页面顶部，避免保留刷新前的中间滚动位置。
-    resetScrollTop(repeat = 1) {
+    // 仅在首次进入或文章 ID 变更时回顶，避免干扰阅读中的手动滚动。
+    scrollToTop() {
       this.$nextTick(() => {
-        const run = () => {
-          window.scrollTo(0, 0);
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-        };
-
-        run();
-        if (repeat > 1) {
-          setTimeout(run, 60);
-        }
-        if (repeat > 2) {
-          setTimeout(run, 180);
-        }
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
       });
     },
     // 组件级兜底：确保 v-md-editor/v-md-preview 注册完成后再渲染详情与评论。

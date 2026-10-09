@@ -1,61 +1,23 @@
 <template>
-  <div id="home" @touchstart.passive="handleTouchStart" @touchend.passive="handleTouchEnd">
-    <!-- 移动端两侧抽屉入口：左分类，右公告/博主信息。 -->
-    <button class="drawer-handle drawer-handle-left" @click="openLeftDrawer">分类</button>
-    <button class="drawer-handle drawer-handle-right" @click="openRightDrawer">公告</button>
-    <!-- 抽屉态遮罩：点击关闭。 -->
-    <div v-if="isAnyDrawerOpen" class="drawer-mask" @click="closeDrawers"></div>
-
+  <div id="home">
     <div class="home-layout">
-      <!-- 左侧：分类汇总-->
-      <div
-        v-bind:class="{ 'left-panel': true, outter: outter, 'drawer-open': isLeftDrawerOpen }"
-      >
-        <category :articleInfo="articleInfo" />
-      </div>
-
-      <!-- 中间主体：articles和 onFile 两个组件接收 articleInfo数据 -->
+      <!-- 主体：articles 和 onFile 两个组件接收 articleInfo 数据。 -->
       <keep-alive>
         <router-view :articleInfo="articleInfo" class="main-content"></router-view>
       </keep-alive>
-
-      <!-- 右侧：公告信息和博主卡片 -->
-      <div
-        v-bind:class="{ 'right-panel': true, outter: outter, 'drawer-open': isRightDrawerOpen }"
-      >
-        <notice/>
-        <blogger-intro  style="margin-top:2vh"/>
-      </div>
     </div>
 
   </div>
 </template>
 
 <script>
-import category from '../components/category.vue';
-import bloggerIntro from '../components/bloggerIntro.vue';
-import notice from '../components/notice.vue';
 export default {
   name: "homeComponent",
-  components: { 
-    category,
-    bloggerIntro,
-    notice,
-  },
   data() {
     return {
       // time:new Date().getTime(),
       // articleInfo: [],
       cateNameFlag: '',
-      // 左抽屉（分类）开关状态。
-      isLeftDrawerOpen: false,
-      // 右抽屉（公告/博主）开关状态。
-      isRightDrawerOpen: false,
-      // 侧栏吸顶阈值状态（与 markdown 的 outter 逻辑一致）。
-      outter: false,
-      // 手势起点坐标，用于判定横向滑动方向和距离。
-      touchStartX: 0,
-      touchStartY: 0,
     }
   },
   computed: {
@@ -64,21 +26,6 @@ export default {
         // 文章列表统一从 Vuex 获取，避免重复存储与双数据源不一致。
         return this.$store.state.articleInfo.article || [];
       }
-    },
-    isAnyDrawerOpen() {
-      // 任一抽屉打开都视为抽屉态。
-      return this.isLeftDrawerOpen || this.isRightDrawerOpen;
-    }
-  },
-  watch: {
-    isAnyDrawerOpen(next) {
-      // 移动端抽屉打开时锁定页面滚动，避免背景跟随滑动。
-      if (typeof document !== 'undefined') {
-        document.body.style.overflow = next ? 'hidden' : '';
-      }
-    },
-    $route() {
-      this.closeDrawers();
     }
   },
   methods: {
@@ -116,96 +63,7 @@ export default {
 
       request.send();
     },
-    openLeftDrawer() {
-      // 同时只允许一个抽屉打开。
-      this.isRightDrawerOpen = false;
-      this.isLeftDrawerOpen = true;
-    },
-    openRightDrawer() {
-      // 同时只允许一个抽屉打开。
-      this.isLeftDrawerOpen = false;
-      this.isRightDrawerOpen = true;
-    },
-    closeDrawers() {
-      // 统一关闭入口：遮罩、路由变化、手势都复用。
-      this.isLeftDrawerOpen = false;
-      this.isRightDrawerOpen = false;
-    },
-    isMobileDrawerMode() {
-      // 抽屉交互仅在中小屏启用。
-      return typeof window !== 'undefined' && window.innerWidth <= 1200;
-    },
-    handleTouchStart(event) {
-      if (!this.isMobileDrawerMode() || !event.touches || !event.touches.length) {
-        return;
-      }
-
-      // 记录手势起点。
-      this.touchStartX = event.touches[0].clientX;
-      this.touchStartY = event.touches[0].clientY;
-    },
-    handleTouchEnd(event) {
-      if (!this.isMobileDrawerMode() || !event.changedTouches || !event.changedTouches.length) {
-        return;
-      }
-
-      const endX = event.changedTouches[0].clientX;
-      const endY = event.changedTouches[0].clientY;
-      const deltaX = endX - this.touchStartX;
-      const deltaY = endY - this.touchStartY;
-      const absX = Math.abs(deltaX);
-      const absY = Math.abs(deltaY);
-
-      // 只处理明显的横向手势，避免干扰正常纵向滚动。
-      if (absX < 52 || absY > absX) {
-        return;
-      }
-
-      const width = window.innerWidth || 0;
-      // 边缘触发区：只有从屏幕边缘起滑才尝试打开抽屉。
-      const edgeTriggerWidth = 26;
-
-      if (!this.isAnyDrawerOpen) {
-        // 左边缘向右滑：打开左抽屉。
-        if (this.touchStartX <= edgeTriggerWidth && deltaX > 0) {
-          this.openLeftDrawer();
-          return;
-        }
-
-        // 右边缘向左滑：打开右抽屉。
-        if (this.touchStartX >= width - edgeTriggerWidth && deltaX < 0) {
-          this.openRightDrawer();
-        }
-        return;
-      }
-
-      // 左抽屉打开时，向左滑关闭。
-      if (this.isLeftDrawerOpen && deltaX < 0) {
-        this.closeDrawers();
-        return;
-      }
-
-      // 右抽屉打开时，向右滑关闭。
-      if (this.isRightDrawerOpen && deltaX > 0) {
-        this.closeDrawers();
-      }
-    },
-    // 监听滚动事件，根据滚动距离切换 侧栏 吸顶状态。
-    handleSidebarScroll() {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-      this.outter = scrollTop > 60;
-    }
   },
-  mounted() {
-    window.addEventListener('scroll', this.handleSidebarScroll);
-  },
-  beforeDestroy() {
-    // 移除滚动监听，恢复默认滚动行为。
-    window.removeEventListener('scroll', this.handleSidebarScroll);
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = '';
-    }
-  }
 };
 </script>
 
@@ -217,6 +75,7 @@ export default {
 .home-layout {
   display: flex;
   margin-top: 0;
+  justify-content: center;
 }
 
 .left-panel::-webkit-scrollbar {
@@ -250,10 +109,16 @@ export default {
 }
 
 .main-content {
-  width: 60%;
-  margin-left: 20%;
+  width: min(62%, 1100px);
   margin-top: 2vh;
   min-width: 0;
+}
+
+/* 文章详情自带三栏网格，不受首页文章列表版心限制。 */
+.main-content.article-detail-view {
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
 }
 
 /* 仅限桌面端，侧栏切换到 outter 吸顶态。 移动端不能吸顶，否则会被导航栏遮挡*/

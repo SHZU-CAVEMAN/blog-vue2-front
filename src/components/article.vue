@@ -8,7 +8,7 @@
       <div :class="{ content: true, content_add: flag }">
         <div style="">
           <div>
-            <span style="margin-left:1%">时间：{{ article.publishTime}}</span>
+            <span style="margin-left:1%">时间：{{ formatPublishDate(article.publishTime) }}</span>
           </div>
           <div>
             <span style="margin-left:1%">分类：{{ article.category.name }}</span>
@@ -57,6 +57,9 @@ export default {
   },
   props: ["article"],
   methods: {
+    formatPublishDate(date) {
+      return String(date || "").replace(/\//g, "-");
+    },
     // 跳转到文章正文：articleView（见router）
     jump(id, name) {
       console.log(id, name);
@@ -123,6 +126,7 @@ h5:hover {
   font-size: var(--font-size-md);
   padding:1vh;
   border: 1px solid rgb(208, 215, 222);
+  border-radius: 6px;
   
 }
 
@@ -148,6 +152,7 @@ h5:hover {
   line-height: var(--line-height-normal);
   overflow: hidden;
   overflow-y:scroll;
+  border-radius: 6px;
 }
 
 
@@ -176,6 +181,8 @@ h5:hover {
   background-color: rgb(255, 255, 255);
   width: 46%;
   margin-left: 4%;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 #picture:hover {
@@ -238,6 +245,7 @@ h5:hover {
   height: 160px;
   object-fit: cover;
   flex: 1;
+  border-radius: 6px;
 }
 
 /* 手机端改为单列阅读流：标题/摘要在上，配图在下。 */

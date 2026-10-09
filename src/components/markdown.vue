@@ -7,7 +7,7 @@
     <div v-if="isAnyDrawerOpen" class="drawer-mask" @click="closeDrawers"></div>
 
     <!-- 左侧 ：当前分类 -->
-    <div v-bind:class="{ 'info_index': true, 'outter': outter, 'drawer-open': isLeftDrawerOpen }">
+    <div :class="{ 'info_index': true, 'drawer-open': isLeftDrawerOpen }">
       <div style="">
         <div style="
             font-size: 0.9rem;
@@ -16,9 +16,9 @@
             align-items: center;
           ">
           <a-icon type="appstore" theme="filled" />
-          <a style="margin-left: 1vh">当前分类</a>
+          <a style="margin-left: 1vh">同分类文章</a>
         </div>
-        <hr style="margin: 1vh 0 2vh 0; color: black; height: 1.5px" />
+        <hr style="margin: 1vh 0 1vh 0; color: black; height: 1.5px" />
         <div
           v-for="item in articlesCurrent"
           :key="item.id || item._id || item.name || item.title"
@@ -32,51 +32,58 @@
 
     </div>
 
-    <!-- 文章主体 -->
-    <div v-bind:class="{ 'body': true }">
-      <!-- 头部：标题，小字信息 -->
-      <div class="title">
-        {{ name }}
+    <!-- 中间主列：正文与评论共用同一布局基线。 -->
+    <main class="article-main-column">
+      <!-- 文章主体 -->
+      <div v-bind:class="{ 'body': true }">
+        <!-- 头部：标题，小字信息 -->
+        <div class="title">
+          {{ name }}
+        </div>
+        <div v-if="publish_time || category_name" class="meta-line">
+          <span v-if="publish_time" class="meta-item">时间：{{ formatPublishDate(publish_time) }}</span>
+          <span v-if="category_name" class="meta-item">分类：{{ category_name }}</span>
+        </div>
+        <hr style="margin-top: 1vh" />
+        <!-- 正文 -->
+        <v-md-preview :text="text" ref="preview" style="" />
+        <!-- 尾部 ：上一篇/下一篇-->
+        <div v-if="publish_time" class="prev-next-wrap">
+          <h1 class="prev-next-item" @click="jumpFormer(formerId, former)">
+            上一篇
+            <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
+            <a>{{ former }}</a>
+          </h1>
+          <h1 class="prev-next-item" @click="jumpLater(laterId, later)">
+            下一篇
+            <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
+            <a>{{ later }}</a>
+          </h1>
+        </div>
       </div>
-      <div v-if="publish_time || category_name" class="meta-line">
-        <span v-if="publish_time" class="meta-item">时间：{{ publish_time }}</span>
-        <span v-if="category_name" class="meta-item">分类：{{ category_name }}</span>
-      </div>
-      <hr style="margin-top: 1vh" />
-      <!-- 正文 -->
-      <v-md-preview :text="text" ref="preview" style="" />
-      <!-- 尾部 ：上一篇/下一篇-->
-      <div v-if="publish_time" class="prev-next-wrap">
-        <h1 class="prev-next-item" @click="jumpFormer(formerId, former)">
-          上一篇
-          <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
-          <a>{{ former }}</a>
-        </h1>
-        <h1 class="prev-next-item" @click="jumpLater(laterId, later)">
-          下一篇
-          <a-icon type="double-right" style="margin-left: 1vh; margin-right: 2vh" />
-          <a>{{ later }}</a>
-        </h1>
-      </div>
-    </div>
+      <!-- 由文章详情页注入，保持评论与正文在同一主列。 -->
+      <slot></slot>
+    </main>
 
     <!-- 文章目录 -->
-    <div :class="{ 'catalog': true, 'outter': outter, 'drawer-open': isRightDrawerOpen }">
-      <div class="el-icon-tickets catalog-head">
-        <a-icon type="container" />
-        <a style="margin-bottom: 2px; margin-left: 2vh"> 目录</a>
+    <div :class="{ 'catalog': true, 'drawer-open': isRightDrawerOpen }">
+      <div class="catalog-head">
+        <a-icon type="container" theme="filled" />
+        <span>目录</span>
       </div>
-      <hr style="margin-top: 5px; margin-bottom: 0" />
+      <hr class="catalog-divider" />
       <div class="catalog-body">
         <!-- 滚动条加在这里 -->
         <div v-if="titles.length" ref="catalog_scroll" class="catalog_content">
-          <div :id="anchor.lineIndex" v-for="anchor in titles" :style="{
-            padding: `0 0 0px ${anchor.indent * 30}px`,
-            marginLeft: '0vh',
-            marginRight: '0vh',
-          }" @click="handleAnchorClick(anchor)" :key="anchor">
-            <a id="font" class="catalog-link">
-              {{ anchor.title }}</a>
+          <div
+            v-for="anchor in titles"
+            :id="anchor.lineIndex"
+            :key="anchor.lineIndex"
+            class="catalog-item"
+            :style="{ paddingLeft: `${anchor.indent * 30 + 8}px` }"
+            @click="handleAnchorClick(anchor)"
+          >
+            <a class="catalog-link">{{ anchor.title }}</a>
             <!-- <hr style="margin:0" /> -->
           </div>
         </div>
@@ -117,9 +124,9 @@ export default {
       titles: [],
       target: [],
       indexArray: [], //这个数组仅用于 siderbar的平移
+      catalogObserver: null,
 
       flag: true,
-      outter: false,
       // 左抽屉（同类文章）开关状态。
       isLeftDrawerOpen: false,
       // 右抽屉（目录）开关状态。
@@ -127,7 +134,6 @@ export default {
 
       articlesCurrent: [],
       item_current_add: false,
-      scroll: false,
       articleListLoading: null,
       // 触摸手势起点：用于计算横向滑动方向与距离。
       touchStartX: 0,
@@ -163,12 +169,13 @@ export default {
     },
   },
   mounted() {
-    // 滚动监听在 mounted 绑定，和 beforeDestroy 成对管理。
-    window.addEventListener("scroll", this.handleScroll);
     this.refreshArticle();
   },
 
   methods: {
+    formatPublishDate(date) {
+      return String(date || "").replace(/\//g, "-");
+    },
     // 读取当前主题变量：用于 JS 动态高亮目录时和 CSS 主题保持一致。
     readThemeVar(name, fallback) {
       const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -351,6 +358,11 @@ export default {
         });
     },
     buildCatalog() {
+      if (this.catalogObserver) {
+        this.catalogObserver.disconnect();
+        this.catalogObserver = null;
+      }
+
       if (!this.$refs.preview || !this.$refs.preview.$el) {
         this.titles = [];
         return;
@@ -390,11 +402,11 @@ export default {
       const options = {
         rootMargin: "5% 0px -70% 0px",
       };
-      const observer = new IntersectionObserver(
+      this.catalogObserver = new IntersectionObserver(
         this.debounce(this.observeScroll, 100),
         options
       );
-      Array.from(this.target, (item) => observer.observe(item));
+      Array.from(this.target, (item) => this.catalogObserver.observe(item));
     },
     getArticleName(article) {
       if (!article) return "";
@@ -450,18 +462,6 @@ export default {
       );
       console.log("当前同分类文章列表：", this.articlesCurrent);
     },
-    // 两侧滚动监听：滚动则改变样式。
-    handleScroll() {
-      this.scroll = true;
-      let scrollTop =
-        document.documentElement.scrollTop || document.body.scrollTop;
-      if (scrollTop > 60) {
-        this.outter = true;
-      } else {
-        this.outter = false;
-      }
-      // console.log("left组件：滚动距离" + scrollTop);
-    },
     //去除除了line所对应标题的字体样式（还原成dimgray）
     removeClass(line) {
       for (let i = 0; i < this.target.length; i++) {
@@ -476,31 +476,34 @@ export default {
       }
     },
 
-    // 文章相应标题出现在视口，则改变右侧目录的标题字体的样式(右侧也应该滚动)
-    observeScroll(item) {
-      // console.log(item);
-      item.forEach((observe) => {
-        //为什么这里要用 forEach ？
-        // console.log('哈？', observe);//observe是一个 IntersectionObserver对象，从其target属性中可以获取观察的dom对象。
-        if (observe) {
-          const line = item[0].target.getAttribute("data-v-md-line"); //line为标题所在文章中的行数
-          // console.log('?',line)
-          this.removeClass(line);
-          const dom = document.getElementById(line);
-          //这个方法效果不太行：
-          // console.log(this.$refs.catalog_scroll)
-          dom.scrollIntoView({
-            behavior: "instant",
-            block: "center",
-            inline: "start",
-          });
-          // 当前目录项使用“交互激活色”，跟随 light/dark 主题联动。
-          dom.style.color = this.readThemeVar("--interactive-text-active", "#24292f");
-          // dom.style.color = "black";
-          dom.style.fontWeight = "600";
-          // sider.style.transform = `translateY(${index * 5}vh)`;
-        }
+    // 文章标题进入视口时，只更新目录高亮和目录面板自身的滚动位置。
+    observeScroll(entries) {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        const line = entry.target.getAttribute("data-v-md-line");
+        const dom = document.getElementById(line);
+        if (!dom) return;
+
+        this.removeClass(line);
+        this.scrollCatalogItemIntoView(dom);
+        dom.style.color = this.readThemeVar("--interactive-text-active", "#24292f");
+        dom.style.fontWeight = "600";
       });
+    },
+    // 仅滚动目录内部容器，避免 scrollIntoView 连带把整页拉回顶部。
+    scrollCatalogItemIntoView(item) {
+      const container = this.$refs.catalog_scroll;
+      if (!container) return;
+
+      const itemTop = item.offsetTop;
+      const itemBottom = itemTop + item.offsetHeight;
+      const visibleTop = container.scrollTop;
+      const visibleBottom = visibleTop + container.clientHeight;
+
+      if (itemTop < visibleTop || itemBottom > visibleBottom) {
+        container.scrollTop = Math.max(0, itemTop - (container.clientHeight - item.offsetHeight) / 2);
+      }
     },
 
     // 点击目录，文章滚动到相应位置（√）
@@ -622,8 +625,10 @@ export default {
     },
   },
   beforeDestroy() {
-    // 卸载时移除滚动监听，避免重复绑定导致的性能问题。
-    window.removeEventListener("scroll", this.handleScroll);
+    if (this.catalogObserver) {
+      this.catalogObserver.disconnect();
+      this.catalogObserver = null;
+    }
     if (typeof document !== "undefined") {
       document.body.style.overflow = "";
     }
@@ -632,10 +637,15 @@ export default {
 </script>
 
 <style scoped>
-/* 详情页基础三栏：左同类 + 中正文 + 右目录。 */
+/* 详情页基础三栏：左同类 + 中心主列 + 右目录。 */
 .markdown-layout {
-  display: flex;
-  margin-top: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 800px) minmax(180px, 220px);
+  justify-content: center;
+  align-items: start;
+  gap: 24px;
+  width: min(96%, 1320px);
+  margin: 16px auto 0;
 }
 
 /* 默认隐藏移动端抽屉入口和遮罩。 */
@@ -650,24 +660,17 @@ export default {
 }
 
 .info_index {
-  /* 左侧“当前分类”浮层：随滚动切换 fixed，并保持独立滚动区域。 */
-  position: fixed;
-  width: 19%;
-  margin-left: 0%;
-  display: flex;
-  /* 初始态就固定在导航下方，避免正文左侧被重复留白。 */
-  top: 10vh;
-  bottom: 0;
+  /* 左侧“当前分类”在自己的网格列内吸顶。 */
+  grid-column: 1;
+  position: sticky;
+  top: calc(var(--nav-height) + 16px);
+  max-height: calc(100vh - var(--nav-height) - 32px);
+  min-width: 0;
   border: 1px solid var(--color-border-primary);
-  padding: 3vh;
+  padding: 12px;
   background-color: var(--color-bg-surface);
-  overflow-y: scroll;
-}
-
-.info_index.outter {
-  /* 滚动超过阈值后吸顶，避免侧栏离开可视区。 */
-  position: fixed;
-  top: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .info {
@@ -699,16 +702,20 @@ export default {
   box-shadow: 0vh 0vh 1vh rgb(143, 143, 143);
 }
 
+/* 中间主列统一承载正文和评论，保持左右边界严格对齐。 */
+.article-main-column {
+  grid-column: 2;
+  min-width: 0;
+}
+
 /* 文章主体样式 */
 .body {
-  width: 60%;
-  margin-left: 20%;
-  margin-top: 2vh;
-
-  color: black;
+  width: 100%;
+  color: var(--text-color-primary);
   background-color: var(--color-bg-surface);
-  border-radius: 1vh;
+  border-radius: 8px;
   border: 1px solid var(--color-border-primary);
+  box-sizing: border-box;
 }
 
 /* 上一篇下一篇样式 */
@@ -723,26 +730,17 @@ h1:hover a {
 }
 
 .catalog {
-  /* 右侧目录容器：固定在页面右侧，和正文保持视觉分离。 */
-  /* overflow: auto; */
-  position: fixed;
-  right: 1%;
-  margin-left: 0;
-  margin-top: 2vh;
-  background-color: var(--color-bg-muted); 
+  /* 右侧目录在自己的网格列内吸顶。 */
+  grid-column: 3;
+  position: sticky;
+  top: calc(var(--nav-height) + 16px);
+  background-color: var(--color-bg-surface);
   overflow: hidden;
-  width: 18%;
   min-height: 10vh;
-  max-height: calc(100vh - 12vh);
+  max-height: calc(100vh - var(--nav-height) - 32px);
   box-sizing: border-box;
-  border-radius: 1vh;
   border: 1px solid var(--color-border-primary);
-}
-
-.catalog.outter {
-  /* 页面下滚后目录维持更贴顶的吸附位置。 */
-  top: 2vh;
-  max-height: calc(100vh - 4vh);
+  padding: 12px;
 }
 
 .catalog_content {
@@ -750,7 +748,7 @@ h1:hover a {
   /* background-color: #e7f3ff; */
   /* background-color: #ffffff; */
   overflow-y: auto;
-  max-height: calc(100vh - 22vh);
+  max-height: calc(100vh - var(--nav-height) - 120px);
 }
 
 /* 隐藏滚动条 */
@@ -767,10 +765,9 @@ h1:hover a {
 /* 左侧当前分类样式 */
 .item_current {
   /* 当前分类里的文章条目：常态使用低对比背景与中性文字。 */
-  background-color: #eff2f5;
+  background-color: var(--color-bg-muted);
   margin-top: 1vh;
-  font-size: 0.9rem;
-  border-radius: 1vh;
+  font-size: 0.85rem;
   padding: 0 1vh;
   color: var(--interactive-text-rest);
 }
@@ -817,8 +814,8 @@ h1:hover a {
   /* 上一篇/下一篇容器：统一改为主题变量驱动，避免内联样式硬编码颜色。 */
   display: flex;
   flex-direction: column;
-  height: 20vh;
-  padding: 3vh;
+  gap: 8px;
+  padding: clamp(16px, 2vw, 24px);
 }
 
 .prev-next-item {
@@ -834,27 +831,48 @@ h1:hover a {
 }
 
 .catalog-head {
-  /* 目录标题色使用次级文字变量，夜间模式可自动降亮度。 */
-  font-size: 2.8vh;
-  margin-top: 1vh;
+  /* 与“当前分类”一致：图标与标题左对齐、紧凑展示。 */
+  font-size: 0.9rem;
+  font-weight: 550;
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: var(--text-color-secondary);
+  color: var(--text-color-primary);
+}
+
+.catalog-head span {
+  margin-left: 1vh;
+}
+
+.catalog-divider {
+  margin: 1vh 0 1vh;
+  border-color: var(--color-border-primary);
 }
 
 .catalog-body {
-  /* 目录主体内层：提供稳定留白，避免标题贴边。 */
-  background-color: var(--color-bg-surface);
-  padding: 2vh;
+  /* 外层已统一提供留白，目录内容无需再叠加内边距。 */
+  background-color: transparent;
+  padding: 0;
+}
+
+.catalog-item {
+  margin-top: 0.5vh;
+  padding: 0 1vh;
+  background-color: var(--color-bg-muted);
+  color: var(--interactive-text-rest);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.catalog-item:hover {
+  color: var(--interactive-text-active);
+  font-weight: 550;
+  border: 1px solid var(--color-border-primary);
 }
 
 .catalog-link {
-  /* 目录条目默认使用可点击文字常态色，激活态在 JS 中动态覆盖。 */
-  cursor: pointer;
-  height: 4vh;
-  font-size: 0.9rem;
-  color: var(--interactive-text-rest);
+  /* 目录条目继承容器颜色，激活态仍由观察器动态标记。 */
+  display: block;
+  color: inherit;
 }
 
 .catalog-empty {
@@ -1021,14 +1039,14 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
   .markdown-layout {
     /* 小屏切换为单列，正文占满可视宽度。 */
     display: block;
-    padding: 0 10px;
+    width: 100%;
+    margin-top: 6px;
   }
 
+  .article-main-column,
   .body {
     /* 正文容器与抽屉解耦，避免被侧栏挤压。 */
     width: 100%;
-    margin-left: 0;
-    margin-top: 6px;
   }
 
   .drawer-handle {
@@ -1071,9 +1089,7 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
   }
 
   .info_index,
-  .info_index.outter,
-  .catalog,
-  .catalog.outter {
+  .catalog {
     /* 左右侧栏统一为 fixed 浮层，避免跟随正文滚动。 */
     position: fixed !important;
     /* 抽屉高度 = 全屏减去导航栏，再留一点空隙。 */
@@ -1091,16 +1107,14 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
   }
 
-  .info_index,
-  .info_index.outter {
+  .info_index {
     left: 0;
     /* 左抽屉默认收起。 */
     transform: translateX(-104%);
     padding: 12px;
   }
 
-  .catalog,
-  .catalog.outter {
+  .catalog {
     right: 0;
     /* 右抽屉默认收起。 */
     transform: translateX(104%);
@@ -1114,8 +1128,7 @@ html[data-theme="dark"] .body /deep/ .v-md-editor-preview table th {
   }
 
   .catalog-body {
-    /* 小屏目录内边距收紧，增加可视条目数。 */
-    padding: 10px;
+    padding: 0;
   }
 
   .catalog_content {

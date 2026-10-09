@@ -1,8 +1,7 @@
 <template>
-  <!-- 右侧博主简介卡片-->
   <div class="bloggerIntro">
-    <br />
-    <div style="text-align: center">
+    <div class="blogger-profile">
+      <div class="profile-avatar-wrap">
       <!--
         头像图像优化：
         1) 优先使用 AVIF/WebP 等现代格式；
@@ -24,15 +23,10 @@
      
         />
       </picture>
+      </div>
 
-      <br />
-      <h5 class="name">Li ao</h5>
-      <div class="motto">欢迎驻足</div>
-    </div>
-
-    <hr style="margin-left: 5%; margin-bottom: 0; width: 90%" />
-    <!-- github -->
-    <div class="icon">
+      <!-- github -->
+      <div class="icon">
       <a class="icon-link" href="https://github.com/SHZU-CAVEMAN" title="github" target="_blank">
         <a-icon type="github" class="social-icon" />
       </a>
@@ -54,8 +48,13 @@
             p-id="9147"></path>
         </svg>
       </a>
+      </div>
     </div>
-    <br />
+
+    <blockquote class="blogger-quote">
+      你拥有青春的时候，就要感受它。不要虚掷你的黄金时代，不要去倾听枯燥乏味的东西，不要设法挽留无望的失败，不要把你的生命献给无知、平庸和低俗。这些都是我们时代病态的目标，虚假的理想。活着！把你宝贵的内在生命活出来。什么都别错过。
+      <span class="blogger-quote-source">——王尔德《道林·格雷的画像》</span>
+    </blockquote>
   </div>
 </template>
 
@@ -102,21 +101,53 @@ export default {
 
 <style scoped>
 .bloggerIntro {
-  display: inline-block;
-
-  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 28px;
   width: 100%;
   height: auto;
-  border-radius: 5px;
-  border: 1px solid rgb(208, 215, 222);
+  padding: 16px 24px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.blogger-profile {
+  display: flex;
+  flex: 0 0 130px;
+  align-items: center;
+  flex-direction: column;
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon {
-  margin-top: 2vh;
+  margin-top: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 12px;
+}
+
+.blogger-quote {
+  min-width: 0;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 2px solid var(--color-border-primary);
+  color: var(--text-color-secondary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-relaxed);
+  text-align: left;
+}
+
+.blogger-quote-source {
+  display: block;
+  margin-top: 8px;
+  text-align: right;
 }
 
 .icon-link {
@@ -179,14 +210,14 @@ export default {
 }
 
 .social-icon {
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1;
   color: currentColor;
 }
 
 .custom-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
@@ -213,5 +244,22 @@ img {
   width: 50%;
   height: 50%;
   border-radius: 50%;
+}
+
+@media (max-width: 640px) {
+  .bloggerIntro {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .blogger-profile {
+    flex-basis: auto;
+  }
+
+  .blogger-quote {
+    padding-left: 16px;
+  }
 }
 </style>

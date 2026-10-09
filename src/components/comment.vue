@@ -1,12 +1,10 @@
 <template>
     <!--（每篇文章的）评论展示列表-->
     <div v-bind:class="{ comment: true }">
-        <h5>{{ commentListByProps.length }} 条评论</h5>
+        <h5 class="comment-title">{{ commentListByProps.length }} 条评论</h5>
 
         <!-- 顶部编辑框固定 -->
         <comment-edit :parentId="null" :articleId="articleId"/>
-
-        <hr style="margin:5vh 0 2vh 0" />
 
         <!-- 评论展示列表 （v-for） -->
         <div v-for="Acomment in commentListByProps" :key="Acomment.id" class="comment-row">
@@ -221,14 +219,21 @@ export default {
 /* 评论主容器：桌面端与正文保持同一宽度体系（60% + 20% 居中偏移）。 */
 .comment {
     background-color: var(--color-bg-surface);
-    width: 60%;
+    width: 100%;
     min-height: 30vh;
-    margin-left: 20%;
-    margin-top: 2.5vh;
+    margin: 20px 0 40px;
     border: 1px solid var(--color-border-primary);
     padding: clamp(12px, 2vh, 22px);
     border-radius: 1vh;
     box-sizing: border-box;
+}
+
+.comment-title {
+    margin: 0 0 12px;
+    color: var(--text-color-primary);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
 }
 
 /* 单条评论项：头像 + 内容的稳定横向布局。 */
@@ -314,10 +319,8 @@ img {
 /* 平板/小屏：评论容器切换到全宽，层级缩进收窄。 */
 @media (max-width: 1200px) {
     .comment {
-        width: auto;
-        margin-left: 10px;
-        margin-right: 10px;
-        margin-top: 12px;
+        width: 100%;
+        margin: 12px 0 24px;
         border-radius: 8px;
         padding: 12px;
     }

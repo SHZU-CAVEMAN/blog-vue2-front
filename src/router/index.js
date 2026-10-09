@@ -10,6 +10,11 @@ const routes = [
         component: () => import('../views/home.vue'),
         children: [
             {
+                path: 'archive',
+                name: 'archive',
+                component: () => import('../components/archive.vue'),
+            },
+            {
                 path: 'cate', // 点击分类，进入归档页面
                 name: 'onFile',
                 component: () => import('../components/onFile.vue'),

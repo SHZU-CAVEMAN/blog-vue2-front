@@ -1,6 +1,11 @@
 <template>
   <!-- 中间主体部分：文章卡片列表 + 分页器 + 底部信息栏 -->
   <div class="articles">
+    <blogger-intro class="profile-header" />
+    <div v-if="selectedCategory" class="filter-summary">
+      <span>分类：{{ selectedCategory }}</span>
+      <button type="button" @click="clearCategoryFilter">查看全部</button>
+    </div>
     <!-- 文章卡片列表 -->
     <div v-for="article in temp" :key="article.id" v-slide-in>
       <ArticleCard :article="article"></ArticleCard>
@@ -8,7 +13,7 @@
     <!-- 分页器 -->
     <div class="pagination">
       <common-pagination
-        :total="articleInfo.length"
+        :total="filteredArticleInfo.length"
         :current.sync="page"
         :page-size.sync="pageSize"
         :page-size-options="pageSizeOptions"
@@ -22,18 +27,30 @@
 
 <script>
 import ArticleCard  from "./article.vue";
+import BloggerIntro from "./bloggerIntro.vue";
 import Footer from "../views/footer.vue";
 
 export default {
   name: "articlesComponent",
   components: {
     ArticleCard,
+    BloggerIntro,
     Footer,
   },
   computed: {
     // 文章列表统一从 Vuex 读取，避免和 sessionStorage 双份存储。
     articleInfo() {
       return this.$store.state.articleInfo.article || [];
+    },
+    selectedCategory() {
+      return this.$route.query.category || "";
+    },
+    filteredArticleInfo() {
+      if (!this.selectedCategory) {
+        return this.articleInfo;
+      }
+
+      return this.articleInfo.filter((article) => this.getCategoryName(article) === this.selectedCategory);
     },
   },
   data() {
@@ -55,13 +72,26 @@ export default {
       },
       immediate: true,
     },
+    selectedCategory() {
+      this.page = 1;
+      this.updatePageData();
+    },
   },
   methods: {
     // 基于当前 page/pageSize 计算当前页数据切片。
     updatePageData() {
       const start = (this.page - 1) * this.pageSize;
       const end = this.page * this.pageSize;
-      this.temp = this.articleInfo.slice(start, end);
+      this.temp = this.filteredArticleInfo.slice(start, end);
+    },
+    getCategoryName(article) {
+      const category = article && article.category;
+      return typeof category === "string"
+        ? category
+        : category && (category.name || category.title) || "";
+    },
+    clearCategoryFilter() {
+      this.$router.push({ name: "articles" });
     },
     // 统一处理分页器变更（翻页、改每页条数）。
     onPaginationChange({ page, pageSize }) {
@@ -93,6 +123,31 @@ export default {
 .articles {
   background-color: var(--color-bg-page);
   box-sizing: border-box;
+}
+.profile-header {
+  margin-bottom: 16px;
+}
+.filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: 8px;
+  background-color: var(--color-bg-surface);
+  color: var(--text-color-primary);
+}
+.filter-summary button {
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--interactive-text-rest);
+  cursor: pointer;
+  font: inherit;
+}
+.filter-summary button:hover {
+  color: var(--interactive-text-active);
 }
 .pagination {
   display: flex;

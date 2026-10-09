@@ -49,12 +49,12 @@ export default {
 }
 
 .common-button--primary {
-  background-color: var(--interactive-text-active);
-  color: #ffffff;
+  background-color: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
 }
 
 .common-button--primary:hover {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: var(--color-button-primary-hover-bg);
+  color: var(--color-button-primary-text);
 }
 </style>

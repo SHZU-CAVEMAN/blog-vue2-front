@@ -123,6 +123,33 @@ export default {
     box-shadow: 0vh 0vh 0vh rgb(143, 143, 143);
 }
 
+html[data-theme="dark"] .editor {
+    background-color: var(--color-bg-surface);
+    color: var(--text-color-primary);
+}
+
+/* `>>>` 穿透 scoped 样式边界，覆盖 v-md-editor 生成的内部节点。 */
+html[data-theme="dark"] .editor >>> .v-md-editor__toolbar,
+html[data-theme="dark"] .editor >>> .v-md-editor__main {
+    background-color: var(--color-bg-surface);
+    border-color: var(--color-border-primary);
+}
+
+html[data-theme="dark"] .editor >>> .v-md-editor__toolbar button {
+    color: var(--text-color-secondary);
+}
+
+html[data-theme="dark"] .editor >>> .v-md-editor__left-area,
+html[data-theme="dark"] .editor >>> .v-md-editor__preview,
+html[data-theme="dark"] .editor >>> .v-md-textarea-editor textarea,
+html[data-theme="dark"] .editor >>> .CodeMirror,
+html[data-theme="dark"] .editor >>> .CodeMirror-gutters,
+html[data-theme="dark"] .editor >>> .github-markdown-body,
+html[data-theme="dark"] .editor >>> .vuepress-markdown-body {
+    background-color: var(--color-bg-muted);
+    color: var(--text-color-primary);
+}
+
 .userInfo_character {
     color: var(--text-color-secondary);
     margin-bottom: 1px;
