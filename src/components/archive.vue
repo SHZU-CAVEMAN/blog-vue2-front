@@ -301,8 +301,10 @@ export default {
 }
 
 .archive-article-title {
+  min-width: 0;
   color: var(--interactive-text-rest);
   font-weight: var(--font-weight-medium);
+  overflow-wrap: anywhere;
   text-decoration: none;
 }
 
@@ -313,6 +315,7 @@ export default {
 .archive-article time {
   color: var(--text-color-secondary);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .archive-empty {
@@ -341,8 +344,8 @@ export default {
   }
 
   .archive-article {
-    grid-template-columns: 1fr;
-    gap: 4px;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 10px;
   }
 }
 </style>
