@@ -146,7 +146,7 @@ export default {
    data() {
       return {
          // 修改这里即可更换品牌名，打字动画会按实际字符数自动适配。
-         brandTitle: "穴居人的空间",
+         brandTitle: "李奥的空间",
          isNight: false,
          mobileNavOpen: false,
          mobileCategoryOpen: false,
