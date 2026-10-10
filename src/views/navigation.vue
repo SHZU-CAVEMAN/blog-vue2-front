@@ -101,18 +101,29 @@
             </div>
 
             <div class="mobile-category-group">
-               <div class="mobile-category-label">分类</div>
                <button
-                  v-for="item in categories"
-                  :key="item.name"
-                  :class="{ 'mobile-nav-item-active': currentCategoryName === item.name }"
-                  class="mobile-nav-item mobile-category-item"
+                  :class="{ 'nav-home-active': isCategoryActive }"
+                  :aria-expanded="String(mobileCategoryOpen)"
+                  class="mobile-nav-item mobile-category-label"
                   type="button"
-                  @click="jumpCategory(item.name)"
+                  @click="toggleMobileCategory"
                >
-                  <span>{{ item.name }}</span>
-                  <span v-if="item.number !== undefined">{{ item.number }}</span>
+                  <span>分类</span>
+                  <a-icon :type="mobileCategoryOpen ? 'up' : 'down'" />
                </button>
+               <template v-if="mobileCategoryOpen">
+                  <button
+                     v-for="item in categories"
+                     :key="item.name"
+                     :class="{ 'mobile-nav-item-active': currentCategoryName === item.name }"
+                     class="mobile-nav-item mobile-category-item"
+                     type="button"
+                     @click="jumpCategory(item.name)"
+                  >
+                     <span>{{ item.name }}</span>
+                     <span v-if="item.number !== undefined">{{ item.number }}</span>
+                  </button>
+               </template>
             </div>
 
             <div :class="{ 'nav-home-active': isAboutActive }" class="mobile-nav-item" @click="jumpAbout">
@@ -138,6 +149,7 @@ export default {
          brandTitle: "穴居人的空间",
          isNight: false,
          mobileNavOpen: false,
+         mobileCategoryOpen: false,
          categoryMenuOpen: false,
       }
    },
@@ -145,6 +157,7 @@ export default {
       $route() {
          // 路由变化后自动收起移动端菜单，避免页面切换后面板残留。
          this.mobileNavOpen = false;
+         this.mobileCategoryOpen = false;
          this.categoryMenuOpen = false;
       }
    },
@@ -222,6 +235,7 @@ export default {
             },
          });
          this.mobileNavOpen = false;
+         this.mobileCategoryOpen = false;
          this.categoryMenuOpen = false;
       },
       jumpFriends() {
@@ -243,6 +257,12 @@ export default {
       toggleMobileNav() {
          // 移动端导航折叠开关：控制悬浮面板的显示与隐藏。
          this.mobileNavOpen = !this.mobileNavOpen;
+         if (!this.mobileNavOpen) {
+            this.mobileCategoryOpen = false;
+         }
+      },
+      toggleMobileCategory() {
+         this.mobileCategoryOpen = !this.mobileCategoryOpen;
       },
       toggleCategoryMenu() {
          this.categoryMenuOpen = !this.categoryMenuOpen;
@@ -569,7 +589,7 @@ export default {
 
    .brand-title {
       margin-left: 10px;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
       letter-spacing: 0.04em;
       min-width: 0;
    }
@@ -688,9 +708,13 @@ export default {
    }
 
    .mobile-category-label {
-      padding: 4px 8px;
-      color: var(--text-color-secondary);
-      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--interactive-text-rest);
       text-align: left;
    }
 
@@ -712,7 +736,7 @@ export default {
 /* 超小屏进一步压缩控件尺寸，防止一行溢出。 */
 @media (max-width: 420px) {
    .brand-title {
-      font-size: 1rem;
+      font-size: 1.1rem;
    }
 
    .nav-actions {
